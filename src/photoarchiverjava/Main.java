@@ -24,6 +24,10 @@ public class Main {
             for (Tag tag : directory.getTags()) {
                 System.out.println(tag);
             }
+            
+            
+            
+            
         }
 
     }
