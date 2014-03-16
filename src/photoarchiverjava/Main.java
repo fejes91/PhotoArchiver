@@ -7,6 +7,11 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Tag;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,9 +32,9 @@ public class Main {
 
         for (File f : files) {
             process(f);
-            //System.out.println(getAllMetadataAsString(f));
+            System.out.println(getAllMetadataAsString(f));
             //System.out.println(getMetadataAsString(f));
-            
+
         }
 
         System.out.println("----------------------------------------------------------------------");
@@ -47,6 +52,16 @@ public class Main {
         LinkedList<String> keywords = new LinkedList<>();
         String cameraSettings = "";
 
+        Path path = Paths.get(f.getAbsolutePath());
+        BasicFileAttributes attributes;
+        try {
+            attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            FileTime time = attributes.creationTime();
+            date = new Date(time.toMillis());
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
 
         Boolean haveData = false;
         Metadata metadata = null;
@@ -63,16 +78,17 @@ public class Main {
                     for (Tag tag : directory.getTags()) {
                         if (tag.getTagName().toLowerCase().equals("keywords")) {
                             keywords.add((tag.getDescription()));
-                        } else if (tag.getTagName().toLowerCase().equals("date created")) {
-                            DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy", Locale.ENGLISH);
-                            try {
-                                date = df.parse(tag.getDescription());
-                            } catch (ParseException ex) {
-                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                            }
                         }
                     }
                 }
+
+                if (directory.getName().toLowerCase().equals("exif ifd0")) {
+                    haveData = true;
+                    for (Tag tag : directory.getTags()) {
+                        //TODO camera model
+                    }
+                }
+
 
                 if (directory.getName().toLowerCase().equals("exif subifd")) {
                     haveData = true;
@@ -84,8 +100,19 @@ public class Main {
                                 || tag.getTagName().toLowerCase().equals("lens model")) {
                             cameraSettings += ("|" + tag.getDescription() + "|");
                         }
+                        
+                        if (tag.getTagName().toLowerCase().equals("date/time original")) {
+                            DateFormat df = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
+                            try {
+                                date = df.parse(tag.getDescription());
+                            } catch (ParseException ex) {
+                                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
                     }
                     cameraSettings = cameraSettings.trim();
+                    
+                    
                 }
             }
 
@@ -98,11 +125,11 @@ public class Main {
 
         myMeta = new MyMetaData(date, keywords, name, desc, cameraSettings);
         /*TODO
-            create folder structures
-            move file to folders
-            save meta to db
-        */
-        System.out.println("MyMeta: " + myMeta);                
+         create folder structures
+         move file to folders
+         save meta to db
+         */
+        System.out.println("MyMeta: " + myMeta);
     }
 
     private static String getAllMetadataAsString(File f) {
