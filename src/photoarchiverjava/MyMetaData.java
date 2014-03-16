@@ -4,7 +4,7 @@
  */
 package photoarchiverjava;
 
-import java.util.Date;
+import java.util.Calendar;
 import java.util.LinkedList;
 
 /**
@@ -12,13 +12,13 @@ import java.util.LinkedList;
  * @author adam_fejes_dell
  */
 public class MyMetaData {
-    private Date date;
+    private Calendar date;
     private LinkedList<String> keywords;
     private String name;
     private String desc;
     private String cameraSettings;
 
-    public MyMetaData(Date date, LinkedList<String> keywords, String name, String desc, String cameraSettings) {
+    public MyMetaData(Calendar date, LinkedList<String> keywords, String name, String desc, String cameraSettings) {
         this.date = date;
         this.keywords = keywords;
         this.name = name;
@@ -36,11 +36,11 @@ public class MyMetaData {
         this.cameraSettings = cameraSettings;
     }
 
-    public Date getDate() {
+    public Calendar getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Calendar date) {
         this.date = date;
     }
 
@@ -70,7 +70,7 @@ public class MyMetaData {
 
     @Override
     public String toString() {
-        return "MyMetaData{" + "date=" + date + ", keywords=" + keywords + ", name=" + name + ", desc=" + desc + ", cameraSettings=" + cameraSettings + '}';
+        return "MyMetaData{" + "date=" + date.getTime() + ", keywords=" + keywords + ", name=" + name + ", desc=" + desc + ", cameraSettings=" + cameraSettings + '}';
     }
     
     

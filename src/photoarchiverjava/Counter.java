@@ -10,27 +10,43 @@ package photoarchiverjava;
  */
 public class Counter {
 
-    private static int success = 0;
+    private static int moved = 0;
+    private static int missingData = 0;
     private static int fail = 0;
+    private static int all = 0;
     
-    public static void incSuccess(){
-        ++success;
+    public static void incMoved(){
+        ++moved;
     }
 
     public static void incFail(){
         ++fail;
     }
     
-    public static int getAll(){
-        return fail + success;
+    public static void incMissingData(){
+        ++missingData;
     }
     
-    public static int getSuccess() {
-        return success;
+    public static int getMoved() {
+        return moved;
     }
 
     public static int getFail() {
         return fail;
     }
+    
+    public static int getMissingData(){
+        return missingData;
+    }
+
+    public static int getAll() {
+        return all;
+    }
+
+    public static void setAll(int all) {
+        Counter.all = all;
+    }
+    
+    
     
 }
