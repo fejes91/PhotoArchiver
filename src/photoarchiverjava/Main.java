@@ -6,7 +6,10 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Tag;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +19,7 @@ import java.nio.file.attribute.FileTime;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
@@ -31,12 +35,13 @@ public class Main {
 
     public static void main(String[] args) {
 
-        vault = new File("C:\\Users\\adam_fejes_dell\\Desktop\\Archiver Vault");
-        inbox = new File("C:\\Users\\adam_fejes_dell\\Desktop\\Archiver Inbox");
+        vault = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Vault");
+        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         File[] files = inbox.listFiles();
         Counter.setAll(files.length);
         for (File f : files) {
-            process(f);
+            handleFile(f, getMetadata(f));
+            
             //System.out.println(getAllMetadataAsString(f));
         }
         System.out.println("----------------------------------------------------------------------");
@@ -45,16 +50,39 @@ public class Main {
                 + "\n \t Missing metadata: " + Counter.getMissingData()
                 + "\n \t Failed to archive: " + Counter.getFail());
     }
+    
+    private static void storeMetadata(String path, MyMetaData md) {
+        File metaDir = new File(vault.getAbsolutePath() + "\\meta");
+        metaDir.mkdir();
 
-    private static void process(File f) {
-        MyMetaData myMeta;
-        
+        for (String keyword : md.getKeywords()) {
+            File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
+            keywordDir.mkdir();
+
+            File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);
+            try {
+                keywordFile.createNewFile();
+            } catch (IOException ex) {
+                System.err.println(ex.getMessage());
+            }
+            //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
+            try {
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
+                out.println(path);
+                out.flush();
+            } catch (IOException ex) {
+                System.err.println(ex.getMessage());
+            }
+            
+            Counter.incMoved();
+        }
+    }
+
+    private static MyMetaData getMetadata(File f) {
         String name = f.getName();
         Calendar date = new GregorianCalendar();
         String desc = "";
         LinkedList<String> keywords = new LinkedList<>();
-        String cameraSettings = "";
-        
         Path path = Paths.get(f.getAbsolutePath());
         BasicFileAttributes attributes;
         try {
@@ -64,7 +92,6 @@ public class Main {
         } catch (IOException ex) {
             System.err.println("File attribute reading error: " + ex.getMessage());
         }
-
 
         Boolean haveData = false;
         Metadata metadata = null;
@@ -80,28 +107,15 @@ public class Main {
                     for (Tag tag : directory.getTags()) {
                         if (tag.getTagName().toLowerCase().equals("keywords")) {
                             haveData = true;
-                            keywords.add((tag.getDescription()));
-                        }
-                    }
-                }
-                if (directory.getName().toLowerCase().equals("exif ifd0")) {
-                    for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().toLowerCase().equals("model")) {
-                            haveData = true;
-                            cameraSettings += ("|" + tag.getDescription() + "|");
+                            String temp = tag.getDescription();
+                            if(temp != null){
+                                keywords = new LinkedList(Arrays.asList(temp.split(";")));
+                            }
                         }
                     }
                 }
                 if (directory.getName().toLowerCase().equals("exif subifd")) {
                     for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().toLowerCase().equals("exposure time")
-                                || tag.getTagName().toLowerCase().equals("f-number")
-                                || tag.getTagName().toLowerCase().equals("iso speed ratings")
-                                || tag.getTagName().toLowerCase().equals("focal length")
-                                || tag.getTagName().toLowerCase().equals("lens model")) {
-                            cameraSettings += ("|" + tag.getDescription() + "|");
-                        }
-
                         if (tag.getTagName().toLowerCase().equals("date/time original")) {
                             DateFormat df = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
                             try {
@@ -111,44 +125,35 @@ public class Main {
                             }
                         }
                     }
-                    cameraSettings = cameraSettings.trim();
                 }
             }
-
             if (!haveData) {
                 Counter.incMissingData();
             }
         }
-
-        myMeta = new MyMetaData(date, keywords, name, desc, cameraSettings);
-        moveFile(f, myMeta.getDate());
-        //saveToDB(f, myMeta);
-        System.out.println("MyMeta: " + myMeta);
+        return new MyMetaData(date, keywords, name, desc);
     }
 
-    private static void moveFile(File file, Calendar date) {
+    private static void handleFile(File file, MyMetaData md) {
+        //System.out.println("MyMeta: " + myMeta);
         vault.mkdir();
-
-        File year = new File(vault.getAbsolutePath() + "\\" + date.get(Calendar.YEAR));
+        File year = new File(vault.getAbsolutePath() + "\\" + md.getDate().get(Calendar.YEAR));
         year.mkdir();
-
-        File month = new File(year.getAbsolutePath() + "\\" + String.valueOf(date.get(Calendar.MONTH) + 1));
+        File month = new File(year.getAbsolutePath() + "\\" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
         month.mkdir();
-
-        File day = new File(month.getAbsolutePath() + "\\" + date.get(Calendar.DAY_OF_MONTH));
+        File day = new File(month.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
         day.mkdir();
         try {
             //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
             Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
-            Counter.incMoved();
+            storeMetadata(day.getAbsolutePath() + "\\" + file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
             Counter.incFail();
             System.err.println("File already exists: " + ex.getMessage());
-            //TODO újra más névvel
         } catch (IOException ex) {
             Counter.incFail();
             System.err.println("File moving error: " + ex.getMessage());
-        }
+        } 
     }
 
     private static String getAllMetadataAsString(File f) {
@@ -165,38 +170,6 @@ public class Main {
                 for (Tag tag : directory.getTags()) {
                     str += "\t" + tag + "\n";
                 }
-            }
-        }
-        str += "\n----------------------------------------------------------------------";
-
-        return str;
-    }
-
-    private static String getMetadataAsString(File f) {
-        Boolean haveData = false;
-        String str = "";
-        Metadata metadata = null;
-        try {
-            metadata = ImageMetadataReader.readMetadata(f);
-        } catch (ImageProcessingException | IOException ex) {
-            System.err.println("Metadata reading error: " + ex.getMessage() + "\t" + ex.getClass());
-        }
-        if (metadata != null) {
-            str += "Filename: " + f.getName() + "\n";
-            for (Directory directory : metadata.getDirectories()) {
-                if (directory.getName().toLowerCase().equals("iptc")) {
-                    haveData = true;
-                    for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().toLowerCase().equals("keywords") || tag.getTagName().toLowerCase().equals("date created")) {
-                            str += ("\t" + tag.getDescription() + "\n");
-                        }
-                    }
-                }
-            }
-
-            if (!haveData) {
-                str += "\t" + NO_DATA + "\n";
-                Counter.incMissingData();
             }
         }
         str += "\n----------------------------------------------------------------------";

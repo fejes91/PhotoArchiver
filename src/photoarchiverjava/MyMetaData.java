@@ -16,24 +16,12 @@ public class MyMetaData {
     private LinkedList<String> keywords;
     private String name;
     private String desc;
-    private String cameraSettings;
 
-    public MyMetaData(Calendar date, LinkedList<String> keywords, String name, String desc, String cameraSettings) {
+    public MyMetaData(Calendar date, LinkedList<String> keywords, String name, String desc) {
         this.date = date;
         this.keywords = keywords;
         this.name = name;
         this.desc = desc;
-        this.cameraSettings = cameraSettings;
-    }
-
-    
-    
-    public String getCameraSettings() {
-        return cameraSettings;
-    }
-
-    public void setCameraSettings(String cameraSettings) {
-        this.cameraSettings = cameraSettings;
     }
 
     public Calendar getDate() {
@@ -70,8 +58,6 @@ public class MyMetaData {
 
     @Override
     public String toString() {
-        return "MyMetaData{" + "date=" + date.getTime() + ", keywords=" + keywords + ", name=" + name + ", desc=" + desc + ", cameraSettings=" + cameraSettings + '}';
-    }
-    
-    
+        return "MyMetaData{" + "date=" + date + ", keywords=" + keywords + ", name=" + name + ", desc=" + desc + '}';
+    }    
 }
