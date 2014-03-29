@@ -3,7 +3,21 @@
 	<title>Archive Browser</title>
   <meta charset="UTF-8">
 	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-  <script src="init.js"></script>
+  <script>
+    meta = new Object();
+    function loadJs(url, callback){
+      var head = document.getElementsByTagName('head')[0];
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+
+      script.onreadystatechange = callback;
+      script.onload = callback;
+
+      head.appendChild(script);
+    }
+  </script>
+  <!--script src="meta/init.js"></script-->
 
   <style>
     .keyword{
@@ -50,7 +64,6 @@
         console.log($(this).text() + "clicked");
         $("#search_field").val($("#search_field").val() + " " + $(this).text());
       });
-
     });
 
     $("#search_btn").click(function(event){
@@ -63,8 +76,18 @@
       for(var searchKey in searchStr){
         s = searchStr[searchKey];
         console.log("current: " + s);
-        for(src in meta[s.substring(0,1)][s]){
-          $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
+        if(typeof meta[s.substring(0,1)] == "undefined" || typeof meta[s.substring(0,1)][s] == "undefined"){
+          meta.c = new Object();
+          loadJs("meta/" + s + ".js", function(){
+            for(src in meta[s.substring(0,1)][s]){
+              $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
+            }
+          });
+        }
+        else{
+          for(src in meta[s.substring(0,1)][s]){
+            $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
+          }
         }
       }
     });
