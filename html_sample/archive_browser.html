@@ -1,0 +1,75 @@
+<html>
+<head>
+	<title>Archive Browser</title>
+  <meta charset="UTF-8">
+	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+  <script src="init.js"></script>
+
+  <style>
+    .keyword{
+      border: 1px solid grey;
+      margin: 3px;
+      padding: 3px 5px;
+      display: inline-block;
+    }
+
+    .keyword:hover{
+      color: green;
+      border: 1px solid green;
+    }
+  </style>
+
+
+</head>
+
+<body>
+	<div id="search_box">
+    <center>
+  		<input type="text" name="search" id="search_field" placeholder="Enter keywords! " style="width: 90%; height:30px;"/>
+  		<input type="button" value="Search!" id="search_btn" style="width: 30%; height:40px; margin-top: 10px;"/>
+    </center>
+  </div>
+
+  <div id="keywords"></div>
+
+
+	<div id="pictures" style="margin-top: 30px;"></div>
+
+  <script>
+    $(window).load(function(){
+      console.log(JSON.stringify(meta));
+      for(var startLetter in meta){
+        console.log("startletter: " + startLetter);
+        for(var keyword in meta[startLetter]){
+          console.log(keyword);
+          $("#keywords").append('<div class="keyword">' + keyword + '</div>');
+        }
+      }
+
+      $(".keyword").bind('click', function(){
+        console.log($(this).text() + "clicked");
+        $("#search_field").val($("#search_field").val() + " " + $(this).text());
+      });
+
+    });
+
+    $("#search_btn").click(function(event){
+      event.preventDefault();
+      
+      var searchStr = $("#search_field").val().trim().split(" ");
+      console.log(searchStr);
+      $("#pictures").html("");
+
+      for(var searchKey in searchStr){
+        s = searchStr[searchKey];
+        console.log("current: " + s);
+        for(src in meta[s.substring(0,1)][s]){
+          $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
+        }
+      }
+    });
+
+    
+  </script>
+</body>
+</html>
