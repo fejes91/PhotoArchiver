@@ -4,22 +4,28 @@
   <meta charset="UTF-8">
 	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
   <script>
-    meta = new Object();
+    
     function loadJs(url, callback){
       var head = document.getElementsByTagName('head')[0];
       var script = document.createElement('script');
       script.type = 'text/javascript';
       script.src = url;
-
+      head.appendChild(script);
       script.onreadystatechange = callback;
       script.onload = callback;
 
-      head.appendChild(script);
+      
     }
   </script>
   <!--script src="meta/init.js"></script-->
 
   <style>
+    img{
+      max-width: 300px;
+      max-height: 200px;
+      margin: 2px;
+    }
+
     .keyword{
       border: 1px solid grey;
       margin: 3px;
@@ -39,8 +45,9 @@
 <body>
 	<div id="search_box">
     <center>
-  		<input type="text" name="search" id="search_field" placeholder="Enter keywords! " style="width: 90%; height:30px;"/>
-  		<input type="button" value="Search!" id="search_btn" style="width: 30%; height:40px; margin-top: 10px;"/>
+  		<input type="text" name="search" id="search_field" placeholder="Enter keywords! " style="width: 90%; height:30px;"/> 
+      <input type="button" value="X" id="clear_search"/>
+  		<input type="button" value="Search!" id="search_btn" style="width: 30%; height:40px; margin: 10px 0px;"/>
     </center>
   </div>
 
@@ -51,46 +58,55 @@
 
   <script>
     $(window).load(function(){
-      console.log(JSON.stringify(meta));
-      for(var startLetter in meta){
-        console.log("startletter: " + startLetter);
-        for(var keyword in meta[startLetter]){
-          console.log(keyword);
-          $("#keywords").append('<div class="keyword">' + keyword + '</div>');
+      keywordlist = new Array();
+      loadJs("meta/list/keywordlist.js", function(){
+        for(var keyword in keywordlist){
+          $("#keywords").append('<div class="keyword">' + keywordlist[keyword] + '</div>');
         }
-      }
 
-      $(".keyword").bind('click', function(){
-        console.log($(this).text() + "clicked");
-        $("#search_field").val($("#search_field").val() + " " + $(this).text());
+        $(".keyword").bind('click', function(){
+          console.log($(this).text() + "clicked");
+          $("#search_field").val($("#search_field").val() + " " + $(this).text());
+        });
       });
     });
 
     $("#search_btn").click(function(event){
       event.preventDefault();
-      
-      var searchStr = $("#search_field").val().trim().split(" ");
-      console.log(searchStr);
+      var searchArray = $("#search_field").val().trim().split(" ");
       $("#pictures").html("");
+      meta = new Object();
+      loadKeyword(0, searchArray);
+    });
 
-      for(var searchKey in searchStr){
-        s = searchStr[searchKey];
-        console.log("current: " + s);
-        if(typeof meta[s.substring(0,1)] == "undefined" || typeof meta[s.substring(0,1)][s] == "undefined"){
-          meta.c = new Object();
-          loadJs("meta/" + s + ".js", function(){
-            for(src in meta[s.substring(0,1)][s]){
-              $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
-            }
-          });
-        }
-        else{
-          for(src in meta[s.substring(0,1)][s]){
-            $("#pictures").append('<img src="' + meta[s.substring(0,1)][s][src] + '" width="100">');
+    $("#clear_search").click(function(){
+      $("#search_field").val("");
+    });
+
+    function loadKeyword(i, array){
+      if(i < array.length){
+        loadJs("meta/" + array[i] + ".js", function(){
+          console.log(array[i] + " loaded");
+          loadKeyword(i+1, array);
+        });
+      }
+      else{
+        for(key in meta){
+          keywordStr = "";
+          for(k in meta[key]){
+            keywordStr += meta[key][k] + " ";
           }
+          $("#pictures").append('<img src="' + key + '" keywords="' + keywordStr.trim() + '">');
         }
       }
-    });
+    }
+
+    function addPicture(picUrl, keyword){
+      if(typeof meta[picUrl] === "undefined"){
+        meta[picUrl] = new Array();
+      }
+      meta[picUrl].push(keyword);
+    }
 
     
   </script>
