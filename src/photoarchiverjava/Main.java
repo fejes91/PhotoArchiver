@@ -56,19 +56,27 @@ public class Main {
         metaDir.mkdir();
 
         for (String keyword : md.getKeywords()) {
-            File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
+            /*File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
             keywordDir.mkdir();
 
-            File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);
+            File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);*/
+            File keywordFile = new File(metaDir.getAbsolutePath() + "\\" + keyword + ".js");
             try {
-                keywordFile.createNewFile();
+                if(keywordFile.createNewFile()){
+                    File listDir = new File(metaDir.getAbsolutePath() + "\\list");
+                    listDir.mkdir();
+                    File keywordList = new File(metaDir.getAbsolutePath() + "\\" + listDir.getName() + "\\keywordlist.js");
+                    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordList, true)));
+                    out.println("keywordlist.push(\"" + keyword + "\");");
+                    out.flush();
+                }
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }
             //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
             try {
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
-                out.println(path);
+                out.println("addPicture(\"" + path + "\", \"" + keyword + "\");");
                 out.flush();
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
@@ -146,7 +154,7 @@ public class Main {
         try {
             //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
             Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
-            storeMetadata(day.getAbsolutePath() + "\\" + file.getName(), md);
+            storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName() + "/" + file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
             Counter.incFail();
             System.err.println("File already exists: " + ex.getMessage());
