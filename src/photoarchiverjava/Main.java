@@ -6,6 +6,10 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Tag;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,6 +30,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 public class Main {
 
@@ -35,13 +40,16 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //TODO thumbnail generálás
+        //TODO GUI
+        //TODO kulcsszó karbantartó
         vault = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Vault");
         inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         File[] files = inbox.listFiles();
         Counter.setAll(files.length);
         for (File f : files) {
             handleFile(f, getMetadata(f));
-            
+
             //System.out.println(getAllMetadataAsString(f));
         }
         System.out.println("----------------------------------------------------------------------");
@@ -50,19 +58,19 @@ public class Main {
                 + "\n \t Missing metadata: " + Counter.getMissingData()
                 + "\n \t Failed to archive: " + Counter.getFail());
     }
-    
+
     private static void storeMetadata(String path, MyMetaData md) {
         File metaDir = new File(vault.getAbsolutePath() + "\\meta");
         metaDir.mkdir();
 
         for (String keyword : md.getKeywords()) {
             /*File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
-            keywordDir.mkdir();
+             keywordDir.mkdir();
 
-            File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);*/
+             File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);*/
             File keywordFile = new File(metaDir.getAbsolutePath() + "\\" + keyword + ".js");
             try {
-                if(keywordFile.createNewFile()){
+                if (keywordFile.createNewFile()) {
                     File listDir = new File(metaDir.getAbsolutePath() + "\\list");
                     listDir.mkdir();
                     File keywordList = new File(metaDir.getAbsolutePath() + "\\" + listDir.getName() + "\\keywordlist.js");
@@ -81,7 +89,7 @@ public class Main {
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }
-            
+
             Counter.incMoved();
         }
     }
@@ -116,7 +124,7 @@ public class Main {
                         if (tag.getTagName().toLowerCase().equals("keywords")) {
                             haveData = true;
                             String temp = tag.getDescription();
-                            if(temp != null){
+                            if (temp != null) {
                                 keywords = new LinkedList(Arrays.asList(temp.split(";")));
                             }
                         }
@@ -144,6 +152,7 @@ public class Main {
 
     private static void handleFile(File file, MyMetaData md) {
         //System.out.println("MyMeta: " + myMeta);
+        System.out.println("Handling file: " + file.getName());
         vault.mkdir();
         File year = new File(vault.getAbsolutePath() + "\\" + md.getDate().get(Calendar.YEAR));
         year.mkdir();
@@ -151,9 +160,23 @@ public class Main {
         month.mkdir();
         File day = new File(month.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
         day.mkdir();
+
+        File thumbnails = new File(vault.getAbsolutePath() + "\\thumbnails");
+        thumbnails.mkdir();
+        File tYear = new File(thumbnails.getAbsolutePath() + "\\" + md.getDate().get(Calendar.YEAR));
+        tYear.mkdir();
+        File tMonth = new File(tYear.getAbsolutePath() + "\\" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
+        tMonth.mkdir();
+        File tDay = new File(tMonth.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
+        tDay.mkdir();
+
         try {
             //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
             Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
+
+            BufferedImage thumbnail = generateThumbnail(file);
+            ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "\\" + file.getName()));
+
             storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName() + "/" + file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
             Counter.incFail();
@@ -161,7 +184,43 @@ public class Main {
         } catch (IOException ex) {
             Counter.incFail();
             System.err.println("File moving error: " + ex.getMessage());
-        } 
+        }
+    }
+
+    private static BufferedImage generateThumbnail(File image) {
+        BufferedImage originalImage;
+        try {
+            originalImage = ImageIO.read(image);
+            double originalWidth = originalImage.getWidth();
+            double originalHeight = originalImage.getHeight();
+            boolean isLandscape = originalHeight < originalWidth;
+
+            Double resizedWidth, resizedHeight;
+            if (isLandscape) {
+                resizedWidth = 600.0;
+                resizedHeight = originalHeight / (originalWidth / resizedWidth);
+            } else {
+                resizedHeight = 400.0;
+                resizedWidth = originalWidth / (originalHeight / resizedHeight);
+            }
+
+            BufferedImage resizedImage = new BufferedImage(resizedWidth.intValue(), resizedHeight.intValue(), originalImage.getType());
+            Graphics2D g = resizedImage.createGraphics();           
+            
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            
+            g.drawImage(originalImage, 0, 0, resizedWidth.intValue(), resizedHeight.intValue(), null);
+            g.dispose();
+
+            return resizedImage;
+        } catch (IOException ex) {
+            return null;
+        }
+
     }
 
     private static String getAllMetadataAsString(File f) {

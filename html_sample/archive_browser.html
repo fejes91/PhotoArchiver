@@ -13,12 +13,9 @@
       head.appendChild(script);
       script.onreadystatechange = callback;
       script.onload = callback;
-
-      
     }
-  </script>
-  <!--script src="meta/init.js"></script-->
 
+  </script>
   <style>
     img{
       max-width: 300px;
@@ -45,21 +42,47 @@
 <body>
 	<div id="search_box">
     <center>
-  		<input type="text" name="search" id="search_field" placeholder="Enter keywords! " style="width: 90%; height:30px;"/> 
-      <input type="button" value="X" id="clear_search"/>
-  		<input type="button" value="Search!" id="search_btn" style="width: 30%; height:40px; margin: 10px 0px;"/>
+      <form method="GET">
+    		<input type="text" name="search" id="search_field" placeholder="Enter keywords! " style="width: 60%; height:30px;"/> 
+        <input type="button" value="X" id="clear_search" style="width: 10%; height:30px;"/>
+    		<input type="submit" value="Search!" id="search_btn" style="width: 40%; height:30px; margin: 10px 0px;"/>
+        
+      </from>
     </center>
   </div>
 
   <div id="keywords"></div>
-
-
 	<div id="pictures" style="margin-top: 30px;"></div>
 
   <script>
+    getURLParameter = function (sParam){
+        var sPageURL = window.location.search.substring(1);
+        var sURLVariables = sPageURL.split('&');
+        for (var i = 0; i < sURLVariables.length; i++){
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam){
+                return decodeURIComponent(sParameterName[1]).split('+').join(' ').trim();
+            }
+        }
+    }
+
     $(window).load(function(){
+      searchStr = getURLParameter("search");
+      $("#search_field").val(searchStr.trim());
+      var searchArray = searchStr.trim().split(" ");
+      $("#pictures").html("");
+      meta = new Object();
+      loadKeyword(0, searchArray);
+
+
+      $("#clear_search").click(function(){
+        $("#search_field").val("");
+      });
+
+
       keywordlist = new Array();
       loadJs("meta/list/keywordlist.js", function(){
+        keywordlist.sort();
         for(var keyword in keywordlist){
           $("#keywords").append('<div class="keyword">' + keywordlist[keyword] + '</div>');
         }
@@ -71,19 +94,11 @@
       });
     });
 
-    $("#search_btn").click(function(event){
-      event.preventDefault();
-      var searchArray = $("#search_field").val().trim().split(" ");
-      $("#pictures").html("");
-      meta = new Object();
-      loadKeyword(0, searchArray);
-    });
 
-    $("#clear_search").click(function(){
-      $("#search_field").val("");
-    });
+      
 
     function loadKeyword(i, array){
+      //TODO AND - OR szűrés a kulcsszavakon
       if(i < array.length){
         loadJs("meta/" + array[i] + ".js", function(){
           console.log(array[i] + " loaded");
@@ -96,8 +111,9 @@
           for(k in meta[key]){
             keywordStr += meta[key][k] + " ";
           }
-          $("#pictures").append('<img src="' + key + '" keywords="' + keywordStr.trim() + '">');
+          $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key +'?rnd=' + parseInt(Math.random()*1000) + '" keywords="' + keywordStr.trim() + '"></a>');
         }
+        meta = null;
       }
     }
 
