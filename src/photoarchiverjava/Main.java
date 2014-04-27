@@ -63,6 +63,11 @@ public class Main {
         File metaDir = new File(vault.getAbsolutePath() + "\\meta");
         metaDir.mkdir();
 
+        String allKeyword = "";
+        for (String keyword : md.getKeywords()) {
+            allKeyword += keyword + " ";
+        }
+        allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
             /*File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
              keywordDir.mkdir();
@@ -84,7 +89,7 @@ public class Main {
             //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
             try {
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
-                out.println("addPicture(\"" + path + "\", \"" + keyword + "\");");
+                out.println("addPicture(\"" + path + "\", \"" + allKeyword + "\");");
                 out.flush();
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
