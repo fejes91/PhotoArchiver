@@ -152,6 +152,10 @@ public class Main {
                 Counter.incMissingData();
             }
         }
+        if(keywords.size() == 0){
+            keywords.add("$");
+        }
+        
         return new MyMetaData(date, keywords, name, desc);
     }
 
