@@ -101,9 +101,10 @@
                 searchStr = getURLParameter("search");
                 if (typeof searchStr !== "undefined") {
                     $("#search_field").val(searchStr.trim());
-                    var searchArray = searchStr.trim().split(" ");
+                    searchArray = searchStr.trim().split(" ");
                     $("#pictures").html("");
-                    meta = new Object();
+                    meta = new Object(); //unió
+                    filteredMeta = new Object(); //metszet
                     loadKeyword(0, searchArray);
                 }
 
@@ -156,7 +157,6 @@
             }
 
             function loadKeyword(i, array) {
-                //TODO AND - OR szűrés a kulcsszavakon
                 if (i < array.length) {
                     loadJs("meta/" + array[i] + ".js", function() {
                         console.log(array[i] + " loaded");
@@ -164,8 +164,9 @@
                     });
                 }
                 else {
-                    for (key in meta) {
-                        $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + meta[key] + '"></a>');
+                    for (key in filteredMeta) {
+                        var keywords = filteredMeta[key];
+                        $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '"></a>');
                     }
                     $("#stat").html($("#pictures img").length + " fotó betöltve!");
                     $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
@@ -244,7 +245,17 @@
             }
 
             function addPicture(picUrl, keyword) {
-                meta[picUrl] = keyword;
+                if(typeof meta[picUrl] == "undefined"){
+                    meta[picUrl] = 1;
+                }
+                else{
+                    meta[picUrl]++;
+                }
+
+                if(meta[picUrl] == searchArray.length){ //ha van annyi előfordulás ahány kulcsszó akkor benne van a metszetben
+                    filteredMeta[picUrl] = keyword;
+                }
+
                 if (typeof metaCount != "undefined") {
                     metaCount++;
                 }
