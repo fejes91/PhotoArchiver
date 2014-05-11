@@ -87,6 +87,10 @@
                     <input type="text" name="search" id="search_field" placeholder="Írj be kulcsszavakat " style="width: 60%; height:30px;"/>
                     <input type="submit" value="Keresés!" id="search_btn" style="width: 10%; height:30px; margin: 10px 0px;"/> 
                     <input type="button" value="Mutasd a kulcsszavakat" id="show_keywords" style="width: 10%; height:30px; margin: 10px 0px;"/>
+                    <br>
+                    <input type="button" value="X" id="clear_dates" style="width: 5%; height:30px;"/>
+                    <input type="text" name="dateFrom" id="dateFrom" style="width: 10%; height:30px;"/>-tól
+                    <input type="text" name="dateTo" id="dateTo" style="width: 10%; height:30px;"/>-ig
                     </from>
             </center>
         </div>
@@ -99,7 +103,9 @@
         <script>
             $(window).load(function() {
                 searchStr = getURLParameter("search");
-                if (typeof searchStr !== "undefined") {
+                dateFromStr = getURLParameter("dateFrom");
+                dateToStr = getURLParameter("dateTo");
+                if (typeof searchStr !== "undefined" && searchStr != "") {
                     $("#search_field").val(searchStr.trim());
                     searchArray = searchStr.trim().split(" ");
                     $("#pictures").html("");
@@ -107,9 +113,43 @@
                     filteredMeta = new Object(); //metszet
                     loadKeyword(0, searchArray);
                 }
+                else if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined" && dateFromStr != "" && dateToStr != "" ){
+                    $("#dateFrom").val(dateFromStr.trim());
+                    $("#dateTo").val(dateToStr.trim());
+                    dateFrom = new Date(dateFromStr);
+                    dateTo = new Date(dateToStr);
+                    dateSearchArray = new Array();
+
+                    loadJs("meta/dates/dateList.js", function() {
+                        while(dateFrom <= dateTo){
+                            var year = dateFrom.getFullYear();
+                            var month = dateFrom.getMonth() + 1;
+                            var day = dateFrom.getDate();
+                            console.log("check: " + year + ". " + month + ". " + day + ".");
+                            if(typeof dates[year] != "undefined"){
+                                if(typeof dates[year][month] != "undefined"){
+                                    if(typeof dates[year][month][day] != "undefined"){
+                                        dateSearchArray.push(year + "/" + month + "/" + day);
+                                    }
+                                }
+                            }
+                            dateFrom.setDate(dateFrom.getDate() + 1);
+                        } 
+                        $("#pictures").html("");
+                        meta = new Object(); //unió
+                        filteredMeta = new Object(); //metszet
+                        loadDate(0, dateSearchArray);
+                    });
+                    
+                }
 
                 $("#clear_search").click(function() {
                     $("#search_field").val("");
+                });
+
+                $("#clear_dates").click(function() {
+                    $("#dateFrom").val("");
+                    $("#dateTo").val("");
                 });
 
                 $("#show_keywords").click(function() {
@@ -118,17 +158,16 @@
                     $(this).hide();
                 });
 
-
-
+                
             });
-
-
 
             function loadJs(url, callback) {
                 var head = document.getElementsByTagName('head')[0];
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = url;
+                script.addEventListener('error', function(){callback();}, true);
+
                 head.appendChild(script);
                 script.onreadystatechange = callback;
                 script.onload = callback;
@@ -151,6 +190,7 @@
                     keywordlist.sort();
 
                     meta = new Object();
+                    filteredMeta = new Object();
                     count = new Object();
                     countKeyword(0, keywordlist);
                 });
@@ -164,48 +204,64 @@
                     });
                 }
                 else {
-                    for (key in filteredMeta) {
-                        var keywords = filteredMeta[key];
-                        $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '"></a>');
-                    }
-                    $("#stat").html($("#pictures img").length + " fotó betöltve!");
-                    $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
+                    showPictures();
+                }
+            }
 
-                    $("img").bind('mouseover', function(event) {
-                        event.preventDefault();
-                        $("#img_hover").show();
-                        $this = $(this);
-                        var keywordArray = $this.attr("keywords").split(" ");
-                        $("#img_hover").html("");
-                        for (key in keywordArray) {
-                            var display = keywordArray[key].trim();
-                            if(display == "$"){
-                                display = "untagged";
-                            }
-                            $("#img_hover").append('<div class="keyword" keyword="' + keywordArray[key] + '">' + display + "</div>");
-                        }
-
-                        $("#img_hover").append('<br><a href="' + $this.parent().attr("href") + '">Show!</a>');
-
-                        $(".keyword").unbind();
-                        $(".keyword").bind('click', function() {
-                            $("#search_field").val($("#search_field").val() + " " + $(this).attr("keyword"));
-                            $("#search_field").val($("#search_field").val().trim());
-                        });
-
-                        $("#img_hover").width($this.width()).height($this.height() - 30).offset($this.offset());
-                        $("#img_hover a").width($this.width());
-                    });
-                    $("#img_hover").bind('mouseleave', function() {
-                        console.log("asd");
-                        $("#img_hover").hide();
+            function loadDate(i, array) {
+                if (i < array.length) {
+                    loadJs(array[i] + "/desc.js", function() {
+                        console.log(array[i] + " loaded");
+                        loadDate(i + 1, array);
                     });
                 }
+                else {
+                    showPictures();
+                }
+            }
+
+            function showPictures(){
+                for (key in filteredMeta) {
+                    var keywords = filteredMeta[key];
+                    $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '"></a>');
+                }
+                $("#stat").html(pictureCount + " fotó betöltve!");
+                $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
+
+                $("img").bind('mouseover', function(event) {
+                    event.preventDefault();
+                    $("#img_hover").show();
+                    $this = $(this);
+                    var keywordArray = $this.attr("keywords").split(" ");
+                    $("#img_hover").html("");
+                    for (key in keywordArray) {
+                        var display = keywordArray[key].trim();
+                        if(display == "$"){
+                            display = "untagged";
+                        }
+                        $("#img_hover").append('<div class="keyword" keyword="' + keywordArray[key] + '">' + display + "</div>");
+                    }
+
+                    $("#img_hover").append('<br><a href="' + $this.parent().attr("href") + '">Show!</a>');
+
+                    $(".keyword").unbind();
+                    $(".keyword").bind('click', function() {
+                        $("#search_field").val($("#search_field").val() + " " + $(this).attr("keyword"));
+                        $("#search_field").val($("#search_field").val().trim());
+                    });
+
+                    $("#img_hover").width($this.width()).height($this.height() - 30).offset($this.offset());
+                    $("#img_hover a").width($this.width());
+                });
+                $("#img_hover").bind('mouseleave', function() {
+                    $("#img_hover").hide();
+                });
             }
 
             function countKeyword(i, array) {
                 if (i < array.length) {
                     metaCount = 0;
+                    searchArray = new Array();
                     loadJs("meta/" + array[i] + ".js", function() {
                         count[array[i]] = metaCount;
                         countKeyword(i + 1, array);
@@ -252,12 +308,41 @@
                     meta[picUrl]++;
                 }
 
-                if(meta[picUrl] == searchArray.length){ //ha van annyi előfordulás ahány kulcsszó akkor benne van a metszetben
+                if(typeof searchArray == "undefined" || meta[picUrl] == searchArray.length || searchArray.length == 0){ //ha van annyi előfordulás ahány kulcsszó akkor benne van a metszetben
                     filteredMeta[picUrl] = keyword;
+
+                    if(typeof pictureCount == "undefined"){
+                        pictureCount = 0;
+                    }
+                    pictureCount++;
                 }
 
                 if (typeof metaCount != "undefined") {
                     metaCount++;
+                }
+                
+                
+            }
+
+            function addDate(dateStr){
+                var dateArray = dateStr.split("-");
+                var year = dateArray[0];
+                var month = dateArray[1];
+                var day = dateArray[2];
+                if(typeof dates == "undefined"){
+                    dates = new Object();
+                }
+
+                if(typeof dates[year] == "undefined"){
+                    dates[year] = new Object();
+                }
+
+                if(typeof dates[year][month] == "undefined"){
+                    dates[year][month] = new Object();
+                }
+
+                if(typeof dates[year][month][day] == "undefined"){
+                    dates[year][month][day] = true;
                 }
             }
 

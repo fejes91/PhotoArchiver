@@ -59,7 +59,7 @@ public class Main {
                 + "\n \t Failed to archive: " + Counter.getFail());
     }
 
-    private static void storeMetadata(String path, MyMetaData md) {
+    private static void storeMetadata(String path, String fileName, MyMetaData md) {
         File metaDir = new File(vault.getAbsolutePath() + "\\meta");
         metaDir.mkdir();
 
@@ -69,10 +69,6 @@ public class Main {
         }
         allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
-            /*File keywordDir = new File(metaDir.getAbsolutePath() + "\\" + keyword.charAt(0));
-             keywordDir.mkdir();
-
-             File keywordFile = new File(keywordDir.getAbsolutePath() + "\\" + keyword);*/
             File keywordFile = new File(metaDir.getAbsolutePath() + "\\" + keyword + ".js");
             try {
                 if (keywordFile.createNewFile()) {
@@ -89,14 +85,27 @@ public class Main {
             //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
             try {
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
-                out.println("addPicture(\"" + path + "\", \"" + allKeyword + "\");");
+                out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
                 out.flush();
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
             }
-
-            Counter.incMoved();
+            
         }
+        
+        try{
+            File folderDescriptorFile = new File(vault.getAbsolutePath() + "\\" + path + "\\desc.js");
+            folderDescriptorFile.createNewFile();
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(folderDescriptorFile, true)));
+            out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
+            out.flush();
+        }
+        catch(IOException ex){
+            System.err.println(ex.getMessage());
+        }
+       
+        
+        Counter.incMoved();
     }
 
     private static MyMetaData getMetadata(File f) {
@@ -168,7 +177,25 @@ public class Main {
         File month = new File(year.getAbsolutePath() + "\\" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
         month.mkdir();
         File day = new File(month.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
+        if(!day.exists()){
+            PrintWriter out = null;
+            try {
+                File metaDir = new File(vault.getAbsolutePath() + "\\meta");
+                metaDir.mkdir();
+                File dateDir = new File(metaDir.getAbsolutePath() + "\\dates");
+                dateDir.mkdir();
+                File dateList = new File(metaDir.getAbsolutePath() + "\\" + dateDir.getName() + "\\dateList.js");
+                out = new PrintWriter(new BufferedWriter(new FileWriter(dateList, true)));
+                out.println("addDate(\"" + md.getDate().get(Calendar.YEAR) + "-" + (md.getDate().get(Calendar.MONTH) + 1) + "-" + md.getDate().get(Calendar.DAY_OF_MONTH) + "\");");
+                out.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                out.close();
+            }
+        }
         day.mkdir();
+        
 
         File thumbnails = new File(vault.getAbsolutePath() + "\\thumbnails");
         thumbnails.mkdir();
@@ -186,7 +213,7 @@ public class Main {
             BufferedImage thumbnail = generateThumbnail(file);
             ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "\\" + file.getName()));
 
-            storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName() + "/" + file.getName(), md);
+            storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName(), file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
             Counter.incFail();
             System.err.println("File already exists: " + ex.getMessage());
