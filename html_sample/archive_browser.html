@@ -4,9 +4,12 @@
         <meta charset="UTF-8">
         <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
         <style>
+            body{
+                margin: 0px;
+            }
+
             img{
-                max-width: 300px;
-                max-height: 200px;
+                
                 margin: 2px;
             }
 
@@ -101,6 +104,11 @@
         <div id="img_hover"></div>
 
         <script>
+            var resizeTimer;
+            $(window).resize(function(){
+                clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(function(){resizePictures();}, 1000);
+            });
             $(window).load(function() {
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
@@ -125,7 +133,6 @@
                             var year = dateFrom.getFullYear();
                             var month = dateFrom.getMonth() + 1;
                             var day = dateFrom.getDate();
-                            console.log("check: " + year + ". " + month + ". " + day + ".");
                             if(typeof dates[year] != "undefined"){
                                 if(typeof dates[year][month] != "undefined"){
                                     if(typeof dates[year][month][day] != "undefined"){
@@ -160,6 +167,63 @@
 
                 
             });
+
+            function resizePictures(){
+                console.log("resizing...");
+                images = $("img");
+                var normalWidth = 300;
+                var normalHeight = normalWidth * 2/3;
+                imgPerRow = parseInt(window.innerWidth / normalWidth);
+
+                for(var i = 0; i < images.length; i++){
+                    console.log("i: " + i);
+                    if(i > 0 && (i + 1) % imgPerRow == 0){
+                         filledSpace = 0;
+                        for(var counter = i; counter > i - imgPerRow; counter--){
+                            console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
+                            var width = $(images[counter]).width();
+                            var height = $(images[counter]).height();
+                            if(parseInt($(images[counter]).width()) > parseInt($(images[counter]).height())){ //fekvő
+                                console.log("fekvő");
+                                if(normalWidth * (height / width) > normalHeight){ //négyzeteshez közeli
+                                    $(images[counter]).height(normalHeight);
+                                    $(images[counter]).width(normalHeight * (width / height));
+                                }
+                                else{
+                                    $(images[counter]).width(normalWidth);
+                                    $(images[counter]).height(normalWidth * (height / width));
+                                }
+                            }
+                            else{//álló
+                                console.log("álló")
+                                $(images[counter]).height(normalHeight);
+                                $(images[counter]).width(normalHeight * (width / height));
+                            }
+                            filledSpace += $(images[counter]).width();
+                        }
+
+                        extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerRow * parseInt($("img").css("margin")) * 2);
+
+                        for(var counter = i; counter > i - imgPerRow; counter--){
+                            var width = $(images[counter]).width();
+                            var height = $(images[counter]).height();
+                            console.log("counter:" + counter + "w/h: " + width + "/" + height);
+                            $(images[counter]).width(width * (1 + (extraSpace / filledSpace)));
+                            var newWidth = $(images[counter]).width();
+                            console.log("new width: " + newWidth);
+
+                            $(images[counter]).height(height * (newWidth / width));
+                            
+                            
+                            var newHeight = $(images[counter]).height();
+                            console.log("new height: " + newHeight);
+                        }
+                    }
+                    else{
+                        $(images[i]).height($(images[i-1]).height());
+                    }
+                }
+            }
 
             function loadJs(url, callback) {
                 var head = document.getElementsByTagName('head')[0];
@@ -223,7 +287,7 @@
             function showPictures(){
                 for (key in filteredMeta) {
                     var keywords = filteredMeta[key];
-                    $("#pictures").append('<a href="' + key + '"><img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '"></a>');
+                    $("#pictures").append('<img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '">');
                 }
                 $("#stat").html(pictureCount + " fotó betöltve!");
                 $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
@@ -256,6 +320,15 @@
                 $("#img_hover").bind('mouseleave', function() {
                     $("#img_hover").hide();
                 });
+
+                loadCount = 0;
+                $("img").load(function(){
+                    loadCount++;
+                    if(loadCount == pictureCount){
+                        resizePictures();
+                    }
+                });
+                
             }
 
             function countKeyword(i, array) {
