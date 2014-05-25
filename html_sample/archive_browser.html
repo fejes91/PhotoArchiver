@@ -165,8 +165,8 @@
                 else if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined" && dateFromStr != "" && dateToStr != "" ){
                     $("#dateFrom").val(dateFromStr.trim());
                     $("#dateTo").val(dateToStr.trim());
-                    dateFrom = new Date(dateFromStr);
-                    dateTo = new Date(dateToStr);
+                    dateFrom = new Date(dateFromStr).setHours(0);
+                    dateTo = new Date(dateToStr).setHours(0);
                     dateSearchArray = new Array();
 
                     loadJs("meta/dates/dateList.js", function() {
@@ -196,8 +196,8 @@
                 });
 
                 $("#clear_dates").click(function() {
-                    $("#dateFrom").val("");
-                    $("#dateTo").val("");
+                    $("#yearFrom").val("").next().val('').next().val('');
+                    $("#yearTo").val("").next().val('').next().val('');
                 });
 
                 $("#show_keywords").click(function() {
@@ -304,14 +304,15 @@
             function filterByDate(){
                 $("#dateFrom").val(dateFromStr.trim());
                 $("#dateTo").val(dateToStr.trim());
-                dateFrom = new Date(dateFromStr);
-                dateTo = new Date(dateToStr);
+                dateFrom = new Date(dateFromStr).setHours(0);
+                dateTo = new Date(dateToStr).setHours(0);
                 
                 for(key in filteredMeta){
                     dateArray = key.split("/");
-                    var date = new Date(dateArray[0] + "-" + dateArray[1] + "-" + dateArray[2]);
-                    //console.log("datefrom: " + dateFrom + " dateTo: " + dateTo + " date: " + date);
+                    var date = new Date(dateArray[0] + "-" + dateArray[1] + "-" + dateArray[2]).setHours(0);
+                    
                     if(dateFrom > date || dateTo < date){
+                        //console.log("DELETE: datefrom: " + dateFrom + " dateTo: " + dateTo + " date: " + date);
                         pictureCount--;
                         delete filteredMeta[key];
                     }
