@@ -60,10 +60,21 @@
 
             #img_hover a{
                 font-family: Helvetica;
-                color: black;
                 text-decoration: none;
                 position: absolute;
-                bottom: 3px;
+                bottom: 0px;
+                left: 0px;
+                text-align: center;
+                background: rgba(0,0,0,0.7);
+                color: white;
+                height: 30px;
+                line-height: 30px;
+            }
+
+            #img_hover .date{
+                font-family: Helvetica;
+                position: absolute;
+                top: 0px;
                 left: 0px;
                 text-align: center;
                 background: rgba(0,0,0,0.7);
@@ -85,16 +96,25 @@
     <body>
         <div id="search_box">
             <center>
-                <form method="GET">
+                <form method="GET" id="searchFrom">
                     <input type="button" value="X" id="clear_search" style="width: 5%; height:30px;"/>
                     <input type="text" name="search" id="search_field" placeholder="Írj be kulcsszavakat " style="width: 60%; height:30px;"/>
                     <input type="submit" value="Keresés!" id="search_btn" style="width: 10%; height:30px; margin: 10px 0px;"/> 
                     <input type="button" value="Mutasd a kulcsszavakat" id="show_keywords" style="width: 10%; height:30px; margin: 10px 0px;"/>
                     <br>
                     <input type="button" value="X" id="clear_dates" style="width: 5%; height:30px;"/>
-                    <input type="text" name="dateFrom" id="dateFrom" style="width: 10%; height:30px;"/>-tól
-                    <input type="text" name="dateTo" id="dateTo" style="width: 10%; height:30px;"/>-ig
+                    <input type="text" name="dateFrom" id="dateFrom" style="display: none;"/>
+                    <input type="text" name="dateTo" id="dateTo" style="display: none"/>
                     </from>
+
+                    <input type="text" max-length="4" id="yearFrom" style="width: 50px; height:30px;"/>
+                    <input type="text" max-length="2" id="monthFrom" style="width: 30px; height:30px;"/>
+                    <input type="text" max-length="2" id="dayFrom" style="width: 30px; height:30px;"/>-tól  
+
+                    <input type="text" max-length="4" id="yearTo" style="width: 50px; height:30px;"/>
+                    <input type="text" max-length="2" id="monthTo" style="width: 30px; height:30px;"/>
+                    <input type="text" max-length="2" id="dayTo" style="width: 30px; height:30px;"/>-ig
+
             </center>
         </div>
 
@@ -109,10 +129,31 @@
                 clearTimeout(resizeTimer);
                 resizeTimer = window.setTimeout(function(){resizePictures();}, 1000);
             });
-            $(window).load(function() {
+            $(window).ready(function() {
+                $("#searchFrom").submit(function(){
+                    $("#dateFrom").val($("#yearFrom").val() + "-" + $("#monthFrom").val() + "-" + $("#dayFrom").val());
+                    $("#dateTo").val($("#yearTo").val() + "-" + $("#monthTo").val() + "-" + $("#dayTo").val());
+                });
+
+                $('input[max-length]').bind("keyup", function(){
+                    console.log("asd");
+                    if($(this).val().length == $(this).attr("max-length")){
+                        $(this).next().focus();
+                    }
+                });
+
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
                 dateToStr = getURLParameter("dateTo");
+                var dateFromArray = dateFromStr.split("-");
+                var dateToArray = dateToStr.split("-");
+                $("#yearFrom").val(dateFromArray[0]);
+                $("#monthFrom").val(dateFromArray[1]);
+                $("#dayFrom").val(dateFromArray[2]);
+                $("#yearTo").val(dateToArray[0]);
+                $("#monthTo").val(dateToArray[1]);
+                $("#dayTo").val(dateToArray[2]);
+
                 if (typeof searchStr !== "undefined" && searchStr != "") {
                     $("#search_field").val(searchStr.trim());
                     searchArray = searchStr.trim().split(" ");
@@ -176,16 +217,16 @@
                 imgPerRow = parseInt(window.innerWidth / normalWidth);
 
                 for(var i = 0; i < images.length; i++){
-                    console.log("i: " + i);
+                    //console.log("i: " + i);
                     if(i > 0 && (i + 1) % imgPerRow == 0){
                          filledSpace = 0;
                         for(var counter = i; counter > i - imgPerRow; counter--){
-                            console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
+                            //console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
                             var width = $(images[counter]).width();
                             var height = $(images[counter]).height();
                             if(parseInt($(images[counter]).width()) > parseInt($(images[counter]).height())){ //fekvő
-                                console.log("fekvő");
-                                if(normalWidth * (height / width) > normalHeight){ //négyzeteshez közeli
+                                //console.log("fekvő");
+                                if(normalWidth * (height / width) > normalHeight){ //négyzeteshez közeli, ezzel van, baj....
                                     $(images[counter]).height(normalHeight);
                                     $(images[counter]).width(normalHeight * (width / height));
                                 }
@@ -195,7 +236,7 @@
                                 }
                             }
                             else{//álló
-                                console.log("álló")
+                                //console.log("álló")
                                 $(images[counter]).height(normalHeight);
                                 $(images[counter]).width(normalHeight * (width / height));
                             }
@@ -207,16 +248,16 @@
                         for(var counter = i; counter > i - imgPerRow; counter--){
                             var width = $(images[counter]).width();
                             var height = $(images[counter]).height();
-                            console.log("counter:" + counter + "w/h: " + width + "/" + height);
+                            //console.log("counter:" + counter + "w/h: " + width + "/" + height);
                             $(images[counter]).width(width * (1 + (extraSpace / filledSpace)));
                             var newWidth = $(images[counter]).width();
-                            console.log("new width: " + newWidth);
+                            //console.log("new width: " + newWidth);
 
                             $(images[counter]).height(height * (newWidth / width));
                             
                             
                             var newHeight = $(images[counter]).height();
-                            console.log("new height: " + newHeight);
+                            //console.log("new height: " + newHeight);
                         }
                     }
                     else{
@@ -260,22 +301,48 @@
                 });
             }
 
+            function filterByDate(){
+                $("#dateFrom").val(dateFromStr.trim());
+                $("#dateTo").val(dateToStr.trim());
+                dateFrom = new Date(dateFromStr);
+                dateTo = new Date(dateToStr);
+                
+                for(key in filteredMeta){
+                    dateArray = key.split("/");
+                    var date = new Date(dateArray[0] + "-" + dateArray[1] + "-" + dateArray[2]);
+                    //console.log("datefrom: " + dateFrom + " dateTo: " + dateTo + " date: " + date);
+                    if(dateFrom > date || dateTo < date){
+                        pictureCount--;
+                        delete filteredMeta[key];
+                    }
+                }
+
+                showPictures();
+                
+            }
+
             function loadKeyword(i, array) {
                 if (i < array.length) {
                     loadJs("meta/" + array[i] + ".js", function() {
-                        console.log(array[i] + " loaded");
+                        //console.log(array[i] + " loaded");
                         loadKeyword(i + 1, array);
                     });
                 }
                 else {
-                    showPictures();
+                    if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined" && dateFromStr != "" && dateToStr != "" ){
+                        filterByDate();
+                    }
+                    else{
+                       showPictures(); 
+                    }
+                    
                 }
             }
 
             function loadDate(i, array) {
                 if (i < array.length) {
                     loadJs(array[i] + "/desc.js", function() {
-                        console.log(array[i] + " loaded");
+                        //console.log(array[i] + " loaded");
                         loadDate(i + 1, array);
                     });
                 }
@@ -287,17 +354,21 @@
             function showPictures(){
                 for (key in filteredMeta) {
                     var keywords = filteredMeta[key];
-                    $("#pictures").append('<img src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '">');
+                    $("#pictures").append('<img full="' + key + '" src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '">');
                 }
                 $("#stat").html(pictureCount + " fotó betöltve!");
                 $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
 
-                $("img").bind('mouseover', function(event) {
+                $("img").bind('click', function(event) {
                     event.preventDefault();
-                    $("#img_hover").show();
                     $this = $(this);
+                    $("#img_hover").show();
+
                     var keywordArray = $this.attr("keywords").split(" ");
                     $("#img_hover").html("");
+
+                    var dateArray = $this.attr("src").split("/");
+                    $("#img_hover").append('<span class="date">' + dateArray[1] + '-' + dateArray[2] + '-' + dateArray[3] + '</span>');
                     for (key in keywordArray) {
                         var display = keywordArray[key].trim();
                         if(display == "$"){
@@ -306,7 +377,7 @@
                         $("#img_hover").append('<div class="keyword" keyword="' + keywordArray[key] + '">' + display + "</div>");
                     }
 
-                    $("#img_hover").append('<br><a href="' + $this.parent().attr("href") + '">Show!</a>');
+                    $("#img_hover").append('<a href="' + $this.attr("full") + '">Vetítés</a>');
 
                     $(".keyword").unbind();
                     $(".keyword").bind('click', function() {
@@ -316,6 +387,8 @@
 
                     $("#img_hover").width($this.width()).height($this.height() - 30).offset($this.offset());
                     $("#img_hover a").width($this.width());
+                    $("#img_hover .date").width($this.width());
+                    
                 });
                 $("#img_hover").bind('mouseleave', function() {
                     $("#img_hover").hide();
