@@ -255,6 +255,7 @@
                     }
                     else{
                         $(images[i]).height($(images[i-1]).height());
+                        $(images[i]).width($(images[i]).height() * (images[i].naturalWidth / images[i].naturalHeight));
                     }
                 }
             }
