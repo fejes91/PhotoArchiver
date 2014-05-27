@@ -127,7 +127,7 @@
             var resizeTimer;
             $(window).resize(function(){
                 clearTimeout(resizeTimer);
-                resizeTimer = window.setTimeout(function(){resizePictures();}, 1000);
+                resizeTimer = window.setTimeout(function(){resizePictures();}, 500);
             });
             $(window).ready(function() {
                 $("#searchFrom").submit(function(){
@@ -165,8 +165,10 @@
                 else if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined" && dateFromStr != "" && dateToStr != "" ){
                     $("#dateFrom").val(dateFromStr.trim());
                     $("#dateTo").val(dateToStr.trim());
-                    dateFrom = new Date(dateFromStr).setHours(0);
-                    dateTo = new Date(dateToStr).setHours(0);
+                    dateFrom = new Date(dateFromStr);
+                    dateFrom.setHours(0);
+                    dateTo = new Date(dateToStr);
+                    dateTo.setHours(0);
                     dateSearchArray = new Array();
 
                     loadJs("meta/dates/dateList.js", function() {
@@ -210,45 +212,32 @@
             });
 
             function resizePictures(){
-                console.log("resizing...");
                 images = $("img");
                 var normalWidth = 300;
                 var normalHeight = normalWidth * 2/3;
-                imgPerRow = parseInt(window.innerWidth / normalWidth);
+                imgPerRow = parseInt(window.innerWidth / (normalWidth + parseInt($("img").css("margin")) * 2));
 
                 for(var i = 0; i < images.length; i++){
                     //console.log("i: " + i);
                     if(i > 0 && (i + 1) % imgPerRow == 0){
-                         filledSpace = 0;
+                        filledSpace = 0;
                         for(var counter = i; counter > i - imgPerRow; counter--){
                             //console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
-                            var width = $(images[counter]).width();
-                            var height = $(images[counter]).height();
-                            if(parseInt($(images[counter]).width()) > parseInt($(images[counter]).height())){ //fekvő
-                                //console.log("fekvő");
-                                if(normalWidth * (height / width) > normalHeight){ //négyzeteshez közeli, ezzel van, baj....
-                                    $(images[counter]).height(normalHeight);
-                                    $(images[counter]).width(normalHeight * (width / height));
-                                }
-                                else{
-                                    $(images[counter]).width(normalWidth);
-                                    $(images[counter]).height(normalWidth * (height / width));
-                                }
-                            }
-                            else{//álló
-                                //console.log("álló")
-                                $(images[counter]).height(normalHeight);
-                                $(images[counter]).width(normalHeight * (width / height));
-                            }
+                            var width = images[counter].naturalWidth;
+                            var height = images[counter].naturalHeight;
+                            $(images[counter]).height(2000);
+							$(images[counter]).width(2000 * (width/height));
+ 
                             filledSpace += $(images[counter]).width();
                         }
 
                         extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerRow * parseInt($("img").css("margin")) * 2);
-
+						//console.log("FILLEDSPACE: " + filledSpace + " EXTRASPACE: " + extraSpace);
+                        
                         for(var counter = i; counter > i - imgPerRow; counter--){
                             var width = $(images[counter]).width();
                             var height = $(images[counter]).height();
-                            //console.log("counter:" + counter + "w/h: " + width + "/" + height);
+                            //console.log("counter:" + counter + " w/h: " + width + "/" + height);
                             $(images[counter]).width(width * (1 + (extraSpace / filledSpace)));
                             var newWidth = $(images[counter]).width();
                             //console.log("new width: " + newWidth);
@@ -304,8 +293,10 @@
             function filterByDate(){
                 $("#dateFrom").val(dateFromStr.trim());
                 $("#dateTo").val(dateToStr.trim());
-                dateFrom = new Date(dateFromStr).setHours(0);
-                dateTo = new Date(dateToStr).setHours(0);
+                dateFrom = new Date(dateFromStr);
+                dateFrom.setHours(0);
+                dateTo = new Date(dateToStr);
+                dateTo.setHours(0);
                 
                 for(key in filteredMeta){
                     dateArray = key.split("/");

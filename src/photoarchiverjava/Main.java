@@ -40,11 +40,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        //TODO thumbnail generálás
         //TODO GUI
         //TODO kulcsszó karbantartó
-        vault = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Vault");
-        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
+        vault = new File("/home/adam/Desktop/Vault");
+        inbox = new File("/home/adam/Pictures");
         File[] files = inbox.listFiles();
         Counter.setAll(files.length);
         for (File f : files) {
@@ -60,7 +59,7 @@ public class Main {
     }
 
     private static void storeMetadata(String path, String fileName, MyMetaData md) {
-        File metaDir = new File(vault.getAbsolutePath() + "\\meta");
+        File metaDir = new File(vault.getAbsolutePath() + "/meta");
         metaDir.mkdir();
 
         String allKeyword = "";
@@ -69,12 +68,12 @@ public class Main {
         }
         allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
-            File keywordFile = new File(metaDir.getAbsolutePath() + "\\" + keyword + ".js");
+            File keywordFile = new File(metaDir.getAbsolutePath() + "/" + keyword + ".js");
             try {
                 if (keywordFile.createNewFile()) {
-                    File listDir = new File(metaDir.getAbsolutePath() + "\\list");
+                    File listDir = new File(metaDir.getAbsolutePath() + "/list");
                     listDir.mkdir();
-                    File keywordList = new File(metaDir.getAbsolutePath() + "\\" + listDir.getName() + "\\keywordlist.js");
+                    File keywordList = new File(metaDir.getAbsolutePath() + "/" + listDir.getName() + "/keywordlist.js");
                     PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordList, true)));
                     out.println("keywordlist.push(\"" + keyword + "\");");
                     out.flush();
@@ -94,7 +93,7 @@ public class Main {
         }
         
         try{
-            File folderDescriptorFile = new File(vault.getAbsolutePath() + "\\" + path + "\\desc.js");
+            File folderDescriptorFile = new File(vault.getAbsolutePath() + "/" + path + "/desc.js");
             folderDescriptorFile.createNewFile();
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(folderDescriptorFile, true)));
             out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
@@ -172,19 +171,19 @@ public class Main {
         //System.out.println("MyMeta: " + myMeta);
         System.out.println("Handling file: " + file.getName());
         vault.mkdir();
-        File year = new File(vault.getAbsolutePath() + "\\" + md.getDate().get(Calendar.YEAR));
+        File year = new File(vault.getAbsolutePath() + "/" + md.getDate().get(Calendar.YEAR));
         year.mkdir();
-        File month = new File(year.getAbsolutePath() + "\\" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
+        File month = new File(year.getAbsolutePath() + "/" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
         month.mkdir();
-        File day = new File(month.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
+        File day = new File(month.getAbsolutePath() + "/" + md.getDate().get(Calendar.DAY_OF_MONTH));
         if(!day.exists()){
             PrintWriter out = null;
             try {
-                File metaDir = new File(vault.getAbsolutePath() + "\\meta");
+                File metaDir = new File(vault.getAbsolutePath() + "/meta");
                 metaDir.mkdir();
-                File dateDir = new File(metaDir.getAbsolutePath() + "\\dates");
+                File dateDir = new File(metaDir.getAbsolutePath() + "/dates");
                 dateDir.mkdir();
-                File dateList = new File(metaDir.getAbsolutePath() + "\\" + dateDir.getName() + "\\dateList.js");
+                File dateList = new File(metaDir.getAbsolutePath() + "/" + dateDir.getName() + "/dateList.js");
                 out = new PrintWriter(new BufferedWriter(new FileWriter(dateList, true)));
                 out.println("addDate(\"" + md.getDate().get(Calendar.YEAR) + "-" + (md.getDate().get(Calendar.MONTH) + 1) + "-" + md.getDate().get(Calendar.DAY_OF_MONTH) + "\");");
                 out.flush();
@@ -197,21 +196,21 @@ public class Main {
         day.mkdir();
         
 
-        File thumbnails = new File(vault.getAbsolutePath() + "\\thumbnails");
+        File thumbnails = new File(vault.getAbsolutePath() + "/thumbnails");
         thumbnails.mkdir();
-        File tYear = new File(thumbnails.getAbsolutePath() + "\\" + md.getDate().get(Calendar.YEAR));
+        File tYear = new File(thumbnails.getAbsolutePath() + "/" + md.getDate().get(Calendar.YEAR));
         tYear.mkdir();
-        File tMonth = new File(tYear.getAbsolutePath() + "\\" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
+        File tMonth = new File(tYear.getAbsolutePath() + "/" + String.valueOf(md.getDate().get(Calendar.MONTH) + 1));
         tMonth.mkdir();
-        File tDay = new File(tMonth.getAbsolutePath() + "\\" + md.getDate().get(Calendar.DAY_OF_MONTH));
+        File tDay = new File(tMonth.getAbsolutePath() + "/" + md.getDate().get(Calendar.DAY_OF_MONTH));
         tDay.mkdir();
 
         try {
-            //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
-            Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "\\" + file.getName()));
+            //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName()));
+            Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName()));
 
             BufferedImage thumbnail = generateThumbnail(file);
-            ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "\\" + file.getName()));
+            ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "/" + file.getName()));
 
             storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName(), file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
