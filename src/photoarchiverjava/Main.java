@@ -42,8 +42,8 @@ public class Main {
 
         //TODO GUI
         //TODO kulcsszó karbantartó
-        vault = new File("/home/adam/Desktop/Vault");
-        inbox = new File("/home/adam/Pictures");
+        vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
+        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         File[] files = inbox.listFiles();
         Counter.setAll(files.length);
         for (File f : files) {
@@ -68,8 +68,8 @@ public class Main {
         }
         allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
-            File keywordFile = new File(metaDir.getAbsolutePath() + "/" + keyword + ".js");
             try {
+                File keywordFile = new File(metaDir.getAbsolutePath() + "/" + keyword + ".js");
                 if (keywordFile.createNewFile()) {
                     File listDir = new File(metaDir.getAbsolutePath() + "/list");
                     listDir.mkdir();
@@ -78,17 +78,13 @@ public class Main {
                     out.println("keywordlist.push(\"" + keyword + "\");");
                     out.flush();
                 }
-            } catch (IOException ex) {
-                System.err.println(ex.getMessage());
-            }
-            //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
-            try {
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
                 out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
                 out.flush();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 System.err.println(ex.getMessage());
             }
+            //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
             
         }
         

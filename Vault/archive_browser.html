@@ -1,4 +1,4 @@
-<html>
+﻿<html>
     <head>
         <title>Archive Browser</title>
         <meta charset="UTF-8">
@@ -145,14 +145,18 @@
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
                 dateToStr = getURLParameter("dateTo");
-                var dateFromArray = dateFromStr.split("-");
-                var dateToArray = dateToStr.split("-");
-                $("#yearFrom").val(dateFromArray[0]);
-                $("#monthFrom").val(dateFromArray[1]);
-                $("#dayFrom").val(dateFromArray[2]);
-                $("#yearTo").val(dateToArray[0]);
-                $("#monthTo").val(dateToArray[1]);
-                $("#dayTo").val(dateToArray[2]);
+
+                if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined"){
+                    var dateFromArray = dateFromStr.split("-");
+                    var dateToArray = dateToStr.split("-");
+                    $("#yearFrom").val(dateFromArray[0]);
+                    $("#monthFrom").val(dateFromArray[1]);
+                    $("#dayFrom").val(dateFromArray[2]);
+                    $("#yearTo").val(dateToArray[0]);
+                    $("#monthTo").val(dateToArray[1]);
+                    $("#dayTo").val(dateToArray[2]);
+                }
+                
 
                 if (typeof searchStr !== "undefined" && searchStr != "") {
                     $("#search_field").val(searchStr.trim());
@@ -260,6 +264,7 @@
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = url;
+                script.charset = "utf-8";
                 script.addEventListener('error', function(){callback();}, true);
 
                 head.appendChild(script);
@@ -428,7 +433,7 @@
                         if(display == "$"){
                             display = "untagged";
                         }
-                        $("#keywords").append('<div class="keyword" keyword="' + key + '" style="font-size: ' + fontSize + '">' + display + ' (' + count[key] + ')</div>');
+                        $("#keywords").append('<div class="keyword" keyword="' + key + '" style="font-size: ' + fontSize + '">' + decodeURIComponent(display) + ' (' + count[key] + ')</div>');
                     }
                     $(".keyword").unbind();
                     $(".keyword").bind('click', function() {
