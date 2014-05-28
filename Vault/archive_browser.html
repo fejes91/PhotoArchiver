@@ -219,44 +219,69 @@
                 images = $("img");
                 var normalWidth = 300;
                 var normalHeight = normalWidth * 2/3;
+                var unresizedImgCount = 0;
                 imgPerRow = parseInt(window.innerWidth / (normalWidth + parseInt($("img").css("margin")) * 2));
 
                 for(var i = 0; i < images.length; i++){
-                    //console.log("i: " + i);
-                    if(i > 0 && (i + 1) % imgPerRow == 0){
+                    console.log("i: " + i);
+                    //if(i > 0 && (i + 1) % imgPerRow == 0){
+                    unresizedImgCount++;
+					if(i > 0 && unresizedImgCount == imgPerRow){
                         filledSpace = 0;
-                        for(var counter = i; counter > i - imgPerRow; counter--){
-                            //console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
+                        
+                        var counter = i;
+                        var recalculate = false;
+                        var imgPerThisRow = imgPerRow;
+                        while(counter > i - imgPerThisRow){
+                            console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
                             var width = images[counter].naturalWidth;
                             var height = images[counter].naturalHeight;
-                            $(images[counter]).height(2000);
-							$(images[counter]).width(2000 * (width/height));
+                            $(images[counter]).height(200);
+							$(images[counter]).width(200 * (width/height));
  
                             filledSpace += $(images[counter]).width();
+                            
+							counter--;
+							if(counter == i - imgPerThisRow){
+								if(filledSpace < $("#pictures").innerWidth() * 0.6 && i + 1 < images.length){
+									imgPerThisRow++;
+									i++;
+									counter = i;
+									filledSpace = 0;
+									console.log("imgperthisrow incremented: " + imgPerThisRow + " counter: " + counter);
+								}
+							}
+							
                         }
 
-                        extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerRow * parseInt($("img").css("margin")) * 2);
-						//console.log("FILLEDSPACE: " + filledSpace + " EXTRASPACE: " + extraSpace);
+                        extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerThisRow * parseInt($("img").css("margin")) * 2);
+						console.log("FILLEDSPACE: " + filledSpace + " EXTRASPACE: " + extraSpace + " imgperthisrow: " + imgPerThisRow);
                         
-                        for(var counter = i; counter > i - imgPerRow; counter--){
+                        for(var counter = i; counter > i - imgPerThisRow; counter--){
                             var width = $(images[counter]).width();
                             var height = $(images[counter]).height();
-                            //console.log("counter:" + counter + " w/h: " + width + "/" + height);
-                            $(images[counter]).width(width * (1 + (extraSpace / filledSpace)));
+                            console.log("counter:" + counter + " w/h: " + width + "/" + height);
+                            $(images[counter]).width(width * (1 + extraSpace / filledSpace));
+                            //$(images[counter]).width(width + (Math.abs(extraSpace) / imgPerThisRow));
                             var newWidth = $(images[counter]).width();
-                            //console.log("new width: " + newWidth);
+                            console.log("new width: " + newWidth);
 
                             $(images[counter]).height(height * (newWidth / width));
                             
                             
                             var newHeight = $(images[counter]).height();
-                            //console.log("new height: " + newHeight);
+                            console.log("new height: " + newHeight);
+                            
+                            
                         }
+                        unresizedImgCount = 0;
                     }
                     else{
                         $(images[i]).height($(images[i-1]).height());
                         $(images[i]).width($(images[i]).height() * (images[i].naturalWidth / images[i].naturalHeight));
                     }
+                    
+                    
                 }
             }
 
