@@ -90,6 +90,27 @@
             #img_hover .keyword{
                 font-size: 12px;
             }
+            
+            #slide_layer{
+				width: 100%;
+				height: 100%;
+				background-color: rgba(255,255,255,0.95);
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				z-index: 998;
+				display: none;
+			}
+			
+			#slide{
+				margin: 20px auto;
+				border: 3px solid red;
+				display: block;
+			}
+			
+			#slide img{
+				margin: 0px auto;
+			}
         </style>
     </head>
 
@@ -107,13 +128,13 @@
                     <input type="text" name="dateTo" id="dateTo" style="display: none"/>
                     </from>
 
-                    <input type="text" max-length="4" id="yearFrom" style="width: 50px; height:30px;"/>
-                    <input type="text" max-length="2" id="monthFrom" style="width: 30px; height:30px;"/>
-                    <input type="text" max-length="2" id="dayFrom" style="width: 30px; height:30px;"/>-tól  
+                    <input type="text" max-length="4" id="yearFrom" class="dateField" style="width: 50px; height:30px;"/>
+                    <input type="text" max-length="2" id="monthFrom" class="dateField" style="width: 30px; height:30px;"/>
+                    <input type="text" max-length="2" id="dayFrom" class="dateField" style="width: 30px; height:30px;"/>-tól  
 
-                    <input type="text" max-length="4" id="yearTo" style="width: 50px; height:30px;"/>
-                    <input type="text" max-length="2" id="monthTo" style="width: 30px; height:30px;"/>
-                    <input type="text" max-length="2" id="dayTo" style="width: 30px; height:30px;"/>-ig
+                    <input type="text" max-length="4" id="yearTo" class="dateField" style="width: 50px; height:30px;"/>
+                    <input type="text" max-length="2" id="monthTo" class="dateField" style="width: 30px; height:30px;"/>
+                    <input type="text" max-length="2" id="dayTo" class="dateField" style="width: 30px; height:30px;"/>-ig
 
             </center>
         </div>
@@ -122,9 +143,13 @@
         <div id="stat"></div>
         <div id="pictures"></div>
         <div id="img_hover"></div>
-
+        <div id="slide_layer"><div id="slide"></div></div>
+		
+		
+		
         <script>
             var resizeTimer;
+            var needToClear = true;
             $(window).resize(function(){
                 clearTimeout(resizeTimer);
                 resizeTimer = window.setTimeout(function(){resizePictures();}, 500);
@@ -135,12 +160,21 @@
                     $("#dateTo").val($("#yearTo").val() + "-" + $("#monthTo").val() + "-" + $("#dayTo").val());
                 });
 
-                $('input[max-length]').bind("keyup", function(){
-                    console.log("asd");
+                $('input[max-length]').bind("keyup", function(event){
                     if($(this).val().length == $(this).attr("max-length")){
-                        $(this).next().focus();
+						needToClear = false;
+                        //$(this).next().focus();
                     }
                 });
+                
+                $('.dateField').focus(function(){
+					if(needToClear){
+						$(this).val('');
+					}
+					else{
+						$(this).select();
+					}
+				});
 
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
@@ -212,18 +246,19 @@
                     $(this).hide();
                 });
 
-                
+				$("#slide_layer").click(function(){$("#slide_layer").hide();});
+                $("#slide").click(function(){return false;});
             });
 
             function resizePictures(){
-                images = $("img");
+                images = $("#pictures img");
                 var normalWidth = 300;
                 var normalHeight = normalWidth * 2/3;
                 var unresizedImgCount = 0;
                 imgPerRow = parseInt(window.innerWidth / (normalWidth + parseInt($("img").css("margin")) * 2));
 
                 for(var i = 0; i < images.length; i++){
-                    console.log("i: " + i);
+                    //console.log("i: " + i);
                     //if(i > 0 && (i + 1) % imgPerRow == 0){
                     unresizedImgCount++;
 					if(i > 0 && unresizedImgCount == imgPerRow){
@@ -233,7 +268,7 @@
                         var recalculate = false;
                         var imgPerThisRow = imgPerRow;
                         while(counter > i - imgPerThisRow){
-                            console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
+                            //console.log("counter: " + counter +  " - " + $(images[counter]).width() + " - " + $(images[counter]).height());
                             var width = images[counter].naturalWidth;
                             var height = images[counter].naturalHeight;
                             $(images[counter]).height(200);
@@ -248,29 +283,29 @@
 									i++;
 									counter = i;
 									filledSpace = 0;
-									console.log("imgperthisrow incremented: " + imgPerThisRow + " counter: " + counter);
+									//console.log("imgperthisrow incremented: " + imgPerThisRow + " counter: " + counter);
 								}
 							}
 							
                         }
 
                         extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerThisRow * parseInt($("img").css("margin")) * 2);
-						console.log("FILLEDSPACE: " + filledSpace + " EXTRASPACE: " + extraSpace + " imgperthisrow: " + imgPerThisRow);
+						//console.log("FILLEDSPACE: " + filledSpace + " EXTRASPACE: " + extraSpace + " imgperthisrow: " + imgPerThisRow);
                         
                         for(var counter = i; counter > i - imgPerThisRow; counter--){
                             var width = $(images[counter]).width();
                             var height = $(images[counter]).height();
-                            console.log("counter:" + counter + " w/h: " + width + "/" + height);
+                            //console.log("counter:" + counter + " w/h: " + width + "/" + height);
                             $(images[counter]).width(width * (1 + extraSpace / filledSpace));
                             //$(images[counter]).width(width + (Math.abs(extraSpace) / imgPerThisRow));
                             var newWidth = $(images[counter]).width();
-                            console.log("new width: " + newWidth);
+                            //console.log("new width: " + newWidth);
 
                             $(images[counter]).height(height * (newWidth / width));
                             
                             
                             var newHeight = $(images[counter]).height();
-                            console.log("new height: " + newHeight);
+                            //console.log("new height: " + newHeight);
                             
                             
                         }
@@ -401,6 +436,12 @@
                     }
 
                     $("#img_hover").append('<a href="' + $this.attr("full") + '">Vetítés</a>');
+                    
+                    $("#img_hover a").click(function(event){
+						event.preventDefault();
+						
+						slideShow($this);
+					});
 
                     $(".keyword").unbind();
                     $(".keyword").bind('click', function() {
@@ -426,6 +467,27 @@
                 });
                 
             }
+            
+            function slideShow($img){
+				$("#slide_layer").show();
+				$("#slide").html('<img src="' + $img.attr('full') + '">');
+				
+				console.log($img.get(0).naturalWidth + "  -  " + $img.get(0).naturalHeight)
+				if($img.get(0).naturalWidth > $img.get(0).naturalHeight){//fekvő
+					console.log("asd");
+					$("#slide, #slide img").css("width", $(window).innerWidth() * 0.9);
+				}
+				else{
+					$("#slide, #slide img").css("height", $(window).innerHeight() * 0.85);
+				}
+				
+				$("#slide img").bind('click');
+				$("#slide img").bind('click', function(){
+					if($img.next().next().length > 0){
+						slideShow($img.next());
+					}
+				});
+			}
 
             function countKeyword(i, array) {
                 if (i < array.length) {
