@@ -31,6 +31,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 public class Main {
 
@@ -39,23 +41,26 @@ public class Main {
     private static File inbox;
 
     public static void main(String[] args) {
+        
+        PAFrame frame = new PAFrame();
 
         //TODO GUI
         //TODO kulcsszó karbantartó
-        vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
-        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
-        File[] files = inbox.listFiles();
-        Counter.setAll(files.length);
-        for (File f : files) {
-            handleFile(f, getMetadata(f));
-
-            //System.out.println(getAllMetadataAsString(f));
-        }
-        System.out.println("----------------------------------------------------------------------");
-        System.out.println("SUMMARY: " + Counter.getAll()
-                + " photos processed. \n \t Successfully archived: " + Counter.getMoved()
-                + "\n \t Missing metadata: " + Counter.getMissingData()
-                + "\n \t Failed to archive: " + Counter.getFail());
+        
+//        vault = new File("/home/adam/git/PhotoArchiver/Vault");
+//        inbox = new File("/home/adam/Pictures");
+//        File[] files = inbox.listFiles();
+//        Counter.setAll(files.length);
+//        for (File f : files) {
+//            handleFile(f, getMetadata(f));
+//
+//            //System.out.println(getAllMetadataAsString(f));
+//        }
+//        System.out.println("----------------------------------------------------------------------");
+//        System.out.println("SUMMARY: " + Counter.getAll()
+//                + " photos processed. \n \t Successfully archived: " + Counter.getMoved()
+//                + "\n \t Missing metadata: " + Counter.getMissingData()
+//                + "\n \t Failed to archive: " + Counter.getFail());
     }
 
     private static void storeMetadata(String path, String fileName, MyMetaData md) {
