@@ -3,6 +3,7 @@
         <title>Archive Browser</title>
         <meta charset="UTF-8">
         <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+        <script src="jquery.base64.js"></script>
         <style>
             body{
                 margin: 0px;
@@ -321,6 +322,7 @@
             }
 
             function loadJs(url, callback) {
+                console.log("load js: " + url);
                 var head = document.getElementsByTagName('head')[0];
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
@@ -381,7 +383,8 @@
 
             function loadKeyword(i, array) {
                 if (i < array.length) {
-                    loadJs("meta/" + array[i] + ".js", function() {
+                    console.log("array[i]: " + $.base64.encode(encodeURI(array[i])) + " - " + array[i]);
+                    loadJs("meta/" + $.base64.encode(encodeURI(array[i])) + ".js", function() {
                         //console.log(array[i] + " loaded");
                         loadKeyword(i + 1, array);
                     });
@@ -493,7 +496,8 @@
                 if (i < array.length) {
                     metaCount = 0;
                     searchArray = new Array();
-                    loadJs("meta/" + array[i] + ".js", function() {
+                    console.log("array[i]: " + $.base64.encode(encodeURI(array[i])) + " - " + array[i]);
+                    loadJs("meta/" + $.base64.encode(encodeURI(array[i])) + ".js", function() {
                         count[array[i]] = metaCount;
                         countKeyword(i + 1, array);
                     });

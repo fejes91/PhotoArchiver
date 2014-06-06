@@ -9,7 +9,6 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
-import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -19,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +37,8 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.codec.binary.Base64;
 /**
  *
  * @author adam
@@ -52,17 +53,19 @@ public class PALogic {
     private Archiver archiver;
     private Queue<String> summary;
     private PrintStream printStream;
-    
 
     public PALogic() {
-        vault = new File("/home/adam/git/PhotoArchiver/Vault");
-        inbox = new File("/home/adam/Pictures");
+        //vault = new File("/home/adam/git/PhotoArchiver/Vault");
+        //inbox = new File("/home/adam/Pictures");
+        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
+        vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
         summary = new LinkedList<>();
         frame = new PAFrame(this);
         
         archiver = new Archiver(this);
         printStream = new PrintStream(new CustomOutputStream(frame.getVaultInfo()));
         writer = new SummaryWriter(summary, printStream);
+        
     }
 
     public void doArchive() {
@@ -81,7 +84,8 @@ public class PALogic {
         allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
             try {
-                File keywordFile = new File(metaDir.getAbsolutePath() + "/" + keyword + ".js");
+                System.out.println("encode: " + Base64.encodeBase64String(URLEncoder.encode(keyword, "UTF-8").getBytes("UTF-8")) + " - " + keyword);
+                File keywordFile = new File(metaDir.getAbsolutePath() + "/" + Base64.encodeBase64String(URLEncoder.encode(keyword, "UTF-8").getBytes("UTF-8")) + ".js");
                 if (keywordFile.createNewFile()) {
                     File listDir = new File(metaDir.getAbsolutePath() + "/list");
                     listDir.mkdir();
