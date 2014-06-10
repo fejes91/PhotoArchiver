@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -54,21 +55,23 @@ public class PALogic {
     private Queue<String> summary;
     private PrintStream printStream;
 
+
     public PALogic() {
-        //vault = new File("/home/adam/git/PhotoArchiver/Vault");
-        //inbox = new File("/home/adam/Pictures");
-        inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
-        vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
+        vault = new File("/home/adam/git/PhotoArchiver/Vault");
+        inbox = new File("/home/adam/Pictures");
+        //inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
+        //vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
         summary = new LinkedList<>();
         frame = new PAFrame(this);
-        
-        archiver = new Archiver(this);
-        printStream = new PrintStream(new CustomOutputStream(frame.getVaultInfo()));
-        writer = new SummaryWriter(summary, printStream);
-        
+
     }
 
     public void doArchive() {
+        archiver = new Archiver(this);
+        
+        printStream = new PrintStream(new CustomOutputStream(frame.getVaultInfo()));
+        writer = new SummaryWriter(summary, printStream);
+
         writer.start();
         archiver.start();
     }
@@ -116,6 +119,7 @@ public class PALogic {
 
 
         Counter.incMoved();
+                
     }
 
     public MyMetaData getMetadata(File f) {
@@ -130,7 +134,7 @@ public class PALogic {
             FileTime time = attributes.creationTime();
             date.setTimeInMillis(time.toMillis());
         } catch (IOException ex) {
-            printToSummary("File attribute reading error: " + ex.getMessage());
+            printToSummary("\tFile attribute reading error: " + ex.getMessage());
         }
 
         Boolean haveData = false;
@@ -226,7 +230,7 @@ public class PALogic {
             storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName(), file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
             Counter.incFail();
-            printToSummary("File already exists: " + ex.getMessage());
+            printToSummary("\tFile already exists: " + ex.getMessage());
         } catch (IOException ex) {
             Counter.incFail();
             System.err.println("File moving error: " + ex.getMessage());
@@ -308,4 +312,17 @@ public class PALogic {
     public void setInbox(File inbox) {
         this.inbox = inbox;
     }
+
+    public SummaryWriter getWriter() {
+        return writer;
+    }
+
+    public void setWriter(SummaryWriter writer) {
+        this.writer = writer;
+    }
+
+    public PAFrame getFrame() {
+        return frame;
+    }
+        
 }

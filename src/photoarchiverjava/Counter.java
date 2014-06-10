@@ -47,6 +47,8 @@ public class Counter {
         Counter.all = all;
     }
     
-    
+    public static void reset(){
+        moved = missingData = fail = all = 0;
+    }
     
 }

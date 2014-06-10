@@ -7,6 +7,7 @@ package photoarchiverjava;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -27,7 +28,7 @@ public class PAFrame extends JFrame {
     private JScrollPane vaultInfoScroll;
     private JFileChooser dirChooser;
     private JButton setVault, setInbox, archive;
-    private JLabel vaultPath, inboxPath;
+    private JLabel vaultPath, inboxPath, progressLabel;
     private JTextArea vaultInfo, inboxInfo;
 
     public PAFrame(final PALogic logic) {
@@ -55,9 +56,14 @@ public class PAFrame extends JFrame {
         vaultPanel.setPreferredSize(new Dimension(450, 450)); 
         
         inboxInfo = new JTextArea();
+        inboxInfo.setPreferredSize(new Dimension(400, 450));
+        inboxInfo.setText("Files in inbox: " + logic.getInbox().listFiles().length);
         vaultInfo = new JTextArea();
-        vaultInfo.setSize(450, 400);
-        vaultInfo.setLineWrap(true);        
+        vaultInfo.setSize(400, 400);
+        vaultInfo.setLineWrap(true);     
+        vaultInfo.setFont(new Font("Arial", Font.PLAIN, 10));
+        
+        progressLabel = new JLabel("0 / " + logic.getInbox().listFiles().length);
         
         setInbox = new JButton("Set Inbox");
         inboxPath = new JLabel();
@@ -69,6 +75,8 @@ public class PAFrame extends JFrame {
                 dirChooser.showOpenDialog(parent);
                 logic.setInbox(dirChooser.getSelectedFile());
                 inboxPath.setText("Inbox dir: " + logic.getInbox().getAbsolutePath());
+                
+                inboxInfo.setText("Files in inbox: " + logic.getInbox().listFiles().length);
             }
         });
         setVault = new JButton("Set Vault");
@@ -102,11 +110,12 @@ public class PAFrame extends JFrame {
         vaultPanel.add(vaultPath);
         
         vaultInfoScroll = new JScrollPane (vaultInfo, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        vaultInfoScroll.setPreferredSize(new Dimension(450, 450));
+        vaultInfoScroll.setPreferredSize(new Dimension(400, 450));
         vaultPanel.add(vaultInfoScroll);
         
         statContainerPanel.add(inboxPanel, BorderLayout.WEST);
         statContainerPanel.add(vaultPanel, BorderLayout.EAST);
+        statContainerPanel.add(progressLabel, BorderLayout.SOUTH);
         this.add(buttonPanel, BorderLayout.NORTH);
         this.add(statContainerPanel, BorderLayout.CENTER);
         this.setVisible(true);
@@ -117,4 +126,13 @@ public class PAFrame extends JFrame {
         return vaultInfo;
     }
 
+    public JButton getArchive() {
+        return archive;
+    }
+
+    public JLabel getProgressLabel() {
+        return progressLabel;
+    }
+
+    
 }

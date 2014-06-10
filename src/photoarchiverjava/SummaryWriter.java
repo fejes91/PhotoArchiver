@@ -17,24 +17,28 @@ public class SummaryWriter extends Thread {
 
     private Queue q;
     private PrintStream stream;
+    private boolean isArchiving;
 
     public SummaryWriter(Queue q, PrintStream stream) {
         this.q = q;
         this.stream = stream;
+        
+        isArchiving = true;
     }
 
     @Override
     public void run() {
         System.out.println("Summary writer running...");
-        while (true) {
+        while (isArchiving || !q.isEmpty()) {
             if(!q.isEmpty()){
                 stream.println(q.poll());
             }
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SummaryWriter.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }
+
+    public void stopWriting() {
+        this.isArchiving = false;
+    }
+    
+    
 }
