@@ -37,11 +37,18 @@
             }
 
             #stat{
-                font-size: 12px;
+                font-size: 14px;
                 display: block;
                 width: 100%;
                 text-align: center;
                 margin: 10px;
+            }
+
+            .pagination{
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin: 20px;
             }
 
             #keywords{
@@ -112,6 +119,16 @@
 			#slide img{
 				margin: 0px auto;
 			}
+
+            .pageBtn{
+                border: 1px solid green;
+                margin: 2px;
+                padding: 10px;
+            }
+
+            .pageBtn.active{
+                border: 3px solid green;
+            }
         </style>
     </head>
 
@@ -127,7 +144,9 @@
                     <input type="button" value="X" id="clear_dates" style="width: 5%; height:30px;"/>
                     <input type="text" name="dateFrom" id="dateFrom" style="display: none;"/>
                     <input type="text" name="dateTo" id="dateTo" style="display: none"/>
-                    </from>
+                    
+                    <input type="text" name="page" id="page" style="display: none"/>
+                </from>
 
                     <input type="text" max-length="4" id="yearFrom" class="dateField" style="width: 50px; height:30px;"/>
                     <input type="text" max-length="2" id="monthFrom" class="dateField" style="width: 30px; height:30px;"/>
@@ -142,13 +161,17 @@
 
         <div id="keywords" hidden></div>
         <div id="stat"></div>
+        <div class="pagination"></div>
         <div id="pictures"></div>
+        <div class="pagination"></div>
         <div id="img_hover"></div>
         <div id="slide_layer"><div id="slide"></div></div>
 		
 		
 		
         <script>
+            var imagePerPage = 20;
+            var actualPage = 0;
             var resizeTimer;
             var needToClear = true;
             $(window).resize(function(){
@@ -167,6 +190,10 @@
                         //$(this).next().focus();
                     }
                 });
+
+                $("input").on('change', function(){
+                    $("#page").val("1");
+                });
                 
                 $('.dateField').focus(function(){
 					if(needToClear){
@@ -180,6 +207,14 @@
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
                 dateToStr = getURLParameter("dateTo");
+                actualPage = parseInt(getURLParameter("page"));
+
+                if(typeof actualPage != "undefined" ){
+                    $("#page").val(actualPage);
+                }
+                else{
+                    $("#page").val("1");
+                }               
 
                 if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined"){
                     var dateFromArray = dateFromStr.split("-");
@@ -322,7 +357,7 @@
             }
 
             function loadJs(url, callback) {
-                console.log("load js: " + url);
+                //console.log("load js: " + url);
                 var head = document.getElementsByTagName('head')[0];
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
@@ -377,7 +412,7 @@
                     }
                 }
 
-                showPictures();
+                showPictures(actualPage);
                 
             }
 
@@ -394,7 +429,7 @@
                         filterByDate();
                     }
                     else{
-                       showPictures(); 
+                       showPictures(actualPage); 
                     }
                     
                 }
@@ -408,17 +443,39 @@
                     });
                 }
                 else {
-                    showPictures();
+                    showPictures(actualPage);
                 }
             }
 
-            function showPictures(){
+            function showPictures(pageNum){
+                $("#pictures").html('');
+
+                var i = 0;
+                var firstPic = (pageNum - 1) * imagePerPage;
+
+                //console.log("pagenum: " + pageNum);
+                //console.log("firstpic: " + firstPic);
                 for (key in filteredMeta) {
+                    
+                    if(i < firstPic){
+                        i++;
+                        continue;
+                    }
+                    
+                    if(i === firstPic + imagePerPage){
+                        break;
+                    }
+                    //console.log(i);
+
                     var keywords = filteredMeta[key];
                     $("#pictures").append('<img full="' + key + '" src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '">');
+
+                    ++i;
                 }
-                $("#stat").html(pictureCount + " fotó betöltve!");
-                $("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
+                
+                $("#stat").html(pictureCount + " találat");
+                //$("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
+                getPagination();
 
                 $("img").bind('click', function(event) {
                     event.preventDefault();
@@ -464,11 +521,31 @@
                 loadCount = 0;
                 $("img").load(function(){
                     loadCount++;
-                    if(loadCount == pictureCount){
+                    if(loadCount == imagePerPage || (actualPage === Math.ceil(pictureCount / imagePerPage)) && loadCount === pictureCount % imagePerPage){
                         resizePictures();
                     }
                 });
                 
+            }
+
+            function getPagination(){
+                var str = ""
+                for(var i = 1; i <= Math.ceil(pictureCount / imagePerPage); ++i){
+                    str += '<span class="pageBtn';
+                    if(i === parseInt(getURLParameter("page"))){
+                        str += ' active';
+                    }
+                    str += '">' + i + '</span>';
+                }
+
+                $(".pagination").append(str);
+
+                $(".pagination .pageBtn:not(.active)").click(function(){
+                    var pageNum = $(this).text();
+                    console.log(pageNum);
+                    $("#page").val(pageNum);
+                    $("#searchFrom").submit();
+                });
             }
             
             function slideShow($img){
@@ -477,7 +554,6 @@
 				
 				console.log($img.get(0).naturalWidth + "  -  " + $img.get(0).naturalHeight)
 				if($img.get(0).naturalWidth > $img.get(0).naturalHeight){//fekvő
-					console.log("asd");
 					$("#slide, #slide img").css("width", $(window).innerWidth() * 0.9);
 				}
 				else{

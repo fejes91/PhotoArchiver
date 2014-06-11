@@ -29,12 +29,12 @@ public class Archiver extends Thread{
         
         Counter.reset();
         Counter.setAll(files.length);
-        logic.getFrame().getProgressLabel().setText("0 / " + files.length);
+        logic.getFrame().getProgressLabel().setText("0%");
         
         for (int i = 0; i < files.length; ++i) {
             File f = files[i];
             logic.handleFile(f, logic.getMetadata(f));
-            logic.getFrame().getProgressLabel().setText((i + 1) + "/" + files.length); 
+            logic.getFrame().getProgressLabel().setText((i + 1) * 100 / files.length+ "%"); 
             //System.out.println(getAllMetadataAsString(f));
         }
         

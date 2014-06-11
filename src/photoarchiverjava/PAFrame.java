@@ -63,7 +63,7 @@ public class PAFrame extends JFrame {
         vaultInfo.setLineWrap(true);     
         vaultInfo.setFont(new Font("Arial", Font.PLAIN, 10));
         
-        progressLabel = new JLabel("0 / " + logic.getInbox().listFiles().length);
+        progressLabel = new JLabel("0%");
         
         setInbox = new JButton("Set Inbox");
         inboxPath = new JLabel();
