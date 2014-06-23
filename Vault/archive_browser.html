@@ -155,6 +155,7 @@
                     <input type="text" max-length="4" id="yearTo" class="dateField" style="width: 50px; height:30px;"/>
                     <input type="text" max-length="2" id="monthTo" class="dateField" style="width: 30px; height:30px;"/>
                     <input type="text" max-length="2" id="dayTo" class="dateField" style="width: 30px; height:30px;"/>-ig
+                    <input type="button" value="Máig!" id="today" style="width: 5%; height:30px;"/>
 
             </center>
         </div>
@@ -167,13 +168,13 @@
         <div id="img_hover"></div>
         <div id="slide_layer"><div id="slide"></div></div>
 		
-		
-		
         <script>
+            var dictionary = {};
             var imagePerPage = 20;
             var actualPage = 0;
             var resizeTimer;
             var needToClear = true;
+            var resetPagination = true;
             $(window).resize(function(){
                 clearTimeout(resizeTimer);
                 resizeTimer = window.setTimeout(function(){resizePictures();}, 500);
@@ -182,18 +183,22 @@
                 $("#searchFrom").submit(function(){
                     $("#dateFrom").val($("#yearFrom").val() + "-" + $("#monthFrom").val() + "-" + $("#dayFrom").val());
                     $("#dateTo").val($("#yearTo").val() + "-" + $("#monthTo").val() + "-" + $("#dayTo").val());
+                    if(resetPagination){
+                        $("#page").val("1");
+                    }
+                    
                 });
 
                 $('input[max-length]').bind("keyup", function(event){
                     if($(this).val().length == $(this).attr("max-length")){
 						needToClear = false;
-                        //$(this).next().focus();
+                        $(this).next().focus();
                     }
                 });
 
-                $("input").on('change', function(){
+                /*$("input").on('change', function(){
                     $("#page").val("1");
-                });
+                });*/
                 
                 $('.dateField').focus(function(){
 					if(needToClear){
@@ -271,6 +276,13 @@
                     $("#search_field").val("");
                 });
 
+                $("#today").click(function(){
+                    var today = new Date();
+                    $("#yearTo").val(today.getFullYear());
+                    $("#monthTo").val(today.getMonth() + 1);
+                    $("#dayTo").val(today.getDate());
+                });
+
                 $("#clear_dates").click(function() {
                     $("#yearFrom").val("").next().val('').next().val('');
                     $("#yearTo").val("").next().val('').next().val('');
@@ -322,7 +334,6 @@
 									//console.log("imgperthisrow incremented: " + imgPerThisRow + " counter: " + counter);
 								}
 							}
-							
                         }
 
                         extraSpace = $("#pictures").innerWidth() - 5 - filledSpace - (imgPerThisRow * parseInt($("img").css("margin")) * 2);
@@ -336,14 +347,9 @@
                             //$(images[counter]).width(width + (Math.abs(extraSpace) / imgPerThisRow));
                             var newWidth = $(images[counter]).width();
                             //console.log("new width: " + newWidth);
-
                             $(images[counter]).height(height * (newWidth / width));
-                            
-                            
                             var newHeight = $(images[counter]).height();
                             //console.log("new height: " + newHeight);
-                            
-                            
                         }
                         unresizedImgCount = 0;
                     }
@@ -351,8 +357,6 @@
                         $(images[i]).height($(images[i-1]).height());
                         $(images[i]).width($(images[i]).height() * (images[i].naturalWidth / images[i].naturalHeight));
                     }
-                    
-                    
                 }
             }
 
@@ -364,7 +368,6 @@
                 script.src = url;
                 script.charset = "utf-8";
                 script.addEventListener('error', function(){callback();}, true);
-
                 head.appendChild(script);
                 script.onreadystatechange = callback;
                 script.onload = callback;
@@ -385,7 +388,6 @@
                 keywordlist = new Array();
                 loadJs("meta/list/keywordlist.js", function() {
                     keywordlist.sort();
-
                     meta = new Object();
                     filteredMeta = new Object();
                     count = new Object();
@@ -411,17 +413,15 @@
                         delete filteredMeta[key];
                     }
                 }
-
                 showPictures(actualPage);
-                
             }
 
             function loadKeyword(i, array) {
                 if (i < array.length) {
-                    console.log("array[i]: " + $.base64.encode(encodeURI(array[i])) + " - " + array[i]);
-                    loadJs("meta/" + $.base64.encode(encodeURI(array[i])) + ".js", function() {
-                        //console.log(array[i] + " loaded");
-                        loadKeyword(i + 1, array);
+                    loadJs("meta/list/" + getDictFileName(array[i]) + ".js", function(){
+                        loadJs("meta/" + dictionary[array[i]] + ".js", function() {
+                            loadKeyword(i + 1, array);
+                        });
                     });
                 }
                 else {
@@ -431,7 +431,6 @@
                     else{
                        showPictures(actualPage); 
                     }
-                    
                 }
             }
 
@@ -449,19 +448,16 @@
 
             function showPictures(pageNum){
                 $("#pictures").html('');
-
                 var i = 0;
                 var firstPic = (pageNum - 1) * imagePerPage;
-
                 //console.log("pagenum: " + pageNum);
                 //console.log("firstpic: " + firstPic);
                 for (key in filteredMeta) {
-                    
                     if(i < firstPic){
                         i++;
                         continue;
                     }
-                    
+
                     if(i === firstPic + imagePerPage){
                         break;
                     }
@@ -469,14 +465,12 @@
 
                     var keywords = filteredMeta[key];
                     $("#pictures").append('<img full="' + key + '" src="thumbnails/' + key + '?rnd=' + parseInt(Math.random() * 1000) + '" keywords="' + keywords + '">');
-
                     ++i;
                 }
                 
                 $("#stat").html(pictureCount + " találat");
                 //$("#pictures").append('<a href="#" class="top">Ugrás a tetejére</a>');
                 getPagination();
-
                 $("img").bind('click', function(event) {
                     event.preventDefault();
                     $this = $(this);
@@ -499,10 +493,8 @@
                     
                     $("#img_hover a").click(function(event){
 						event.preventDefault();
-						
 						slideShow($this);
 					});
-
                     $(".keyword").unbind();
                     $(".keyword").bind('click', function() {
                         $("#search_field").val($("#search_field").val() + " " + $(this).attr("keyword"));
@@ -525,7 +517,6 @@
                         resizePictures();
                     }
                 });
-                
             }
 
             function getPagination(){
@@ -544,6 +535,7 @@
                     var pageNum = $(this).text();
                     console.log(pageNum);
                     $("#page").val(pageNum);
+                    resetPagination = false;
                     $("#searchFrom").submit();
                 });
             }
@@ -572,10 +564,12 @@
                 if (i < array.length) {
                     metaCount = 0;
                     searchArray = new Array();
-                    console.log("array[i]: " + $.base64.encode(encodeURI(array[i])) + " - " + array[i]);
-                    loadJs("meta/" + $.base64.encode(encodeURI(array[i])) + ".js", function() {
-                        count[array[i]] = metaCount;
-                        countKeyword(i + 1, array);
+
+                    loadJs("meta/list/" + getDictFileName(array[i]) + ".js", function(){
+                        loadJs("meta/" + dictionary[array[i]] + ".js", function() {
+                            count[array[i]] = metaCount;
+                            countKeyword(i + 1, array);
+                        });
                     });
                 }
                 else {
@@ -631,8 +625,6 @@
                 if (typeof metaCount != "undefined") {
                     metaCount++;
                 }
-                
-                
             }
 
             function addDate(dateStr){
@@ -657,7 +649,44 @@
                 }
             }
 
+            function addToDictionary(keyword, hash){
+                console.log("loading: " + keyword + " - " + hash);
+                dictionary[keyword] = hash;
+            }
 
+            function getDictFileName(keyword){
+                var first = keyword[0];
+                if(first === "ö"){
+                    return "o";
+                }
+                else if(first === "ü"){
+                    return "u";
+                }
+                else if(first === "ó"){
+                    return "o";
+                }
+                else if(first === "ő"){
+                    return "o";
+                }
+                else if(first === "ú"){
+                    return "u";
+                }
+                else if(first === "é"){
+                    return "e";
+                }
+                else if(first === "á"){
+                    return "a";
+                }
+                else if(first === "ű"){
+                    return "u";
+                }
+                else if(first === "í"){
+                    return "i";
+                }
+
+                return first;
+            }
+            
         </script>
     </body>
 </html>

@@ -58,7 +58,7 @@ public class PALogic {
 
     public PALogic() {
         vault = new File("/home/adam/git/PhotoArchiver/Vault");
-        inbox = new File("/home/adam/Pictures");
+        inbox = new File("/home/adam/Desktop/Inbox");
         //inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         //vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
         summary = new LinkedList<>();
@@ -87,14 +87,20 @@ public class PALogic {
         allKeyword = allKeyword.trim();
         for (String keyword : md.getKeywords()) {
             try {
-                System.out.println("encode: " + Base64.encodeBase64String(URLEncoder.encode(keyword, "UTF-8").getBytes("UTF-8")) + " - " + keyword);
-                File keywordFile = new File(metaDir.getAbsolutePath() + "/" + Base64.encodeBase64String(URLEncoder.encode(keyword, "UTF-8").getBytes("UTF-8")) + ".js");
-                if (keywordFile.createNewFile()) {
+                File keywordFile = new File(metaDir.getAbsolutePath() + "/" + keyword.hashCode() + ".js");
+                if (keywordFile.createNewFile()) {//ha nem létezett, akkor fel kell venni a listába is
                     File listDir = new File(metaDir.getAbsolutePath() + "/list");
                     listDir.mkdir();
                     File keywordList = new File(metaDir.getAbsolutePath() + "/" + listDir.getName() + "/keywordlist.js");
                     PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordList, true)));
                     out.println("keywordlist.push(\"" + keyword + "\");");
+                    out.flush();
+                    
+                    File dictDir = new File(metaDir.getAbsolutePath() + "/list");
+                    dictDir.mkdir();
+                    File dictFile = new File(metaDir.getAbsolutePath() + "/" + dictDir.getName() + "/" + getDictionaryfileNameForKeyword(keyword) + ".js");
+                    out = new PrintWriter(new BufferedWriter(new FileWriter(dictFile, true)));
+                    out.println("addToDictionary(\"" + keyword + "\",\"" + keyword.hashCode() + "\");");
                     out.flush();
                 }
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
@@ -291,6 +297,39 @@ public class PALogic {
         }
         str += "\n----------------------------------------------------------------------";
         return str;
+    }
+    
+    private String getDictionaryfileNameForKeyword(String keyword){
+        String first = String.valueOf(keyword.charAt(0)).toLowerCase();
+        if(first.equals("ö")){
+            return "o";
+        }
+        else if(first.equals("ü")){
+            return "u";
+        }
+        else if(first.equals("ó")){
+            return "o";
+        }
+        else if(first.equals("ő")){
+            return "o";
+        }
+        else if(first.equals("ú")){
+            return "u";
+        }
+        else if(first.equals("é")){
+            return "e";
+        }
+        else if(first.equals("á")){
+            return "a";
+        }
+        else if(first.equals("ű")){
+            return "u";
+        }
+        else if(first.equals("í")){
+            return "i";
+        }
+
+        return first;
     }
     
     public void printToSummary(String s){
