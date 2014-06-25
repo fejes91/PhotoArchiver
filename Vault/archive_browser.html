@@ -36,19 +36,24 @@
                 display: block;
             }
 
+            #pictures{
+                display: inline-block;
+            }
+
             #stat{
-                font-size: 14px;
-                display: block;
+                font-size: 17px;
+                display: inline-block;
                 width: 100%;
                 text-align: center;
-                margin: 10px;
+                margin-top: 10px;
             }
 
             .pagination{
-                display: block;
+                display: inline-block;
                 width: 100%;
                 text-align: center;
-                margin: 20px;
+                margin: 10px auto;
+                margin-top: 0px;
             }
 
             #keywords{
@@ -124,45 +129,68 @@
                 border: 1px solid green;
                 margin: 2px;
                 padding: 10px;
+                display: inline-block;
             }
 
             .pageBtn.active{
                 border: 3px solid green;
             }
+
+            .pagerBtn{
+                width: 60px;
+                height: 40px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
         </style>
     </head>
 
     <body>
         <div id="search_box">
-            <center>
+            
                 <form method="GET" id="searchFrom">
-                    <input type="button" value="X" id="clear_search" style="width: 5%; height:30px;"/>
-                    <input type="text" name="search" id="search_field" placeholder="Írj be kulcsszavakat " style="width: 60%; height:30px;"/>
-                    <input type="submit" value="Keresés!" id="search_btn" style="width: 10%; height:30px; margin: 10px 0px;"/> 
-                    <input type="button" value="Mutasd a kulcsszavakat" id="show_keywords" style="width: 10%; height:30px; margin: 10px 0px;"/>
-                    <br>
-                    <input type="button" value="X" id="clear_dates" style="width: 5%; height:30px;"/>
-                    <input type="text" name="dateFrom" id="dateFrom" style="display: none;"/>
-                    <input type="text" name="dateTo" id="dateTo" style="display: none"/>
-                    
-                    <input type="text" name="page" id="page" style="display: none"/>
-                </from>
+                    <div style="float: left; margin: 10px 0px 10px 20px; width:35%">
+                        <input type="button" value="X" id="clear_search" style="width: 40px; height:30px;"/>
+                        <input type="text" name="search" id="search_field" placeholder="Írj be kulcsszavakat " style="width: 75%; height:30px;"/>
+                        <input type="text" name="dateFrom" id="dateFrom" style="display: none;"/>
+                        <input type="text" name="dateTo" id="dateTo" style="display: none"/>
+                        
+                        <input type="text" name="page" id="page" style="display: none"/>
+                        <input type="button" value="Kulcsszavak" id="show_keywords" style="width: 150px; height:30px;"/>
+                    </div>
 
-                    <input type="text" max-length="4" id="yearFrom" class="dateField" style="width: 50px; height:30px;"/>
-                    <input type="text" max-length="2" id="monthFrom" class="dateField" style="width: 30px; height:30px;"/>
-                    <input type="text" max-length="2" id="dayFrom" class="dateField" style="width: 30px; height:30px;"/>-tól  
+                    <div style="margin: 10px 0px 10px 20px; width:25%; float: left; text-align: center;">
+                        <input type="submit" value="Keresés!" id="search_btn" style="width: 80%; height:50px; "/>
+                    </div>
 
-                    <input type="text" max-length="4" id="yearTo" class="dateField" style="width: 50px; height:30px;"/>
-                    <input type="text" max-length="2" id="monthTo" class="dateField" style="width: 30px; height:30px;"/>
-                    <input type="text" max-length="2" id="dayTo" class="dateField" style="width: 30px; height:30px;"/>-ig
-                    <input type="button" value="Máig!" id="today" style="width: 5%; height:30px;"/>
+                    <div style="float: right; margin: 10px 20px 10px 0px; text-align: right; width: 35%">
+                        <input type="button" value="X" id="clear_dates" style="width: 40px; height:30px;"/>
+                        <input type="text" max-length="4" id="yearFrom" class="dateField" style="width: 50px; height:30px;"/>
+                        <input type="text" max-length="2" id="monthFrom" class="dateField" style="width: 30px; height:30px;"/>
+                        <input type="text" max-length="2" id="dayFrom" class="dateField" style="width: 30px; height:30px;"/>-tól  
 
-            </center>
+                        <input type="text" max-length="4" id="yearTo" class="dateField" style="width: 50px; height:30px;"/>
+                        <input type="text" max-length="2" id="monthTo" class="dateField" style="width: 30px; height:30px;"/>
+                        <input type="text" max-length="2" id="dayTo" class="dateField" style="width: 30px; height:30px;"/>-ig
+                        <input type="button" value="Máig!" id="today" style="width: 75px; height:30px;"/>
+                    </div>
+
+                </form>
+           
+                
+            
         </div>
 
         <div id="keywords" hidden></div>
         <div id="stat"></div>
-        <div class="pagination"></div>
+        <table class="pagination">
+            <tr>
+                <td class="prevPage"></td>
+                <td class="pages" style="width: 300px;"></td>
+                <td class="nextPage"></td>
+            </tr>
+        </table>
         <div id="pictures"></div>
         <div class="pagination"></div>
         <div id="img_hover"></div>
@@ -290,7 +318,7 @@
 
                 $("#show_keywords").click(function() {
                     initKeywordList();
-                    $("#keywords").show();
+                    $("#keywords").css('display', 'inline-block');
                     $(this).hide();
                 });
 
@@ -521,15 +549,44 @@
 
             function getPagination(){
                 var str = ""
-                for(var i = 1; i <= Math.ceil(pictureCount / imagePerPage); ++i){
+                var actual = parseInt(getURLParameter("page"));
+                var numberOfPages = Math.ceil(pictureCount / imagePerPage);
+
+                if(numberOfPages > 1 ){
+                    $(".prevPage").html('<button class="pagerBtn" id="prevPage"> < </button>');
+                }
+
+                if(numberOfPages > 7 && actual > 3){
+                    str += '<span class="pageBtn">1</span>';
+                    if(actual > 4){
+                        str += "...";    
+                    }
+                }
+
+                for(var i = 1; i <= numberOfPages; ++i){
+                    if(numberOfPages > 7 && (i < actual - 2 || i > actual + 2)){
+                        continue;
+                    }
+
                     str += '<span class="pageBtn';
-                    if(i === parseInt(getURLParameter("page"))){
+                    if(i === actual){
                         str += ' active';
                     }
                     str += '">' + i + '</span>';
                 }
 
-                $(".pagination").append(str);
+                if(actual < numberOfPages - 3){
+                    str += "...";    
+                }
+                if(numberOfPages > 7 && actual < numberOfPages - 2){
+                    str += '<span class="pageBtn">' + numberOfPages + '</span>';   
+                }
+
+                if(numberOfPages > 1){
+                    $(".nextPage").html('<button class="pagerBtn" id="nextPage"> > </button>');
+                }
+
+                $(".pages").html(str);
 
                 $(".pagination .pageBtn:not(.active)").click(function(){
                     var pageNum = $(this).text();
@@ -538,6 +595,19 @@
                     resetPagination = false;
                     $("#searchFrom").submit();
                 });
+
+                $("#nextPage").unbind();
+                $("#prevPage").unbind();
+                if(actual < numberOfPages){
+                    $("#nextPage").bind('click', function(){
+                        $(".pageBtn.active").next().click();
+                    });
+                }
+                if(actual > 1){
+                    $("#prevPage").bind('click', function(){
+                            $(".pageBtn.active").prev().click();
+                    });
+                }
             }
             
             function slideShow($img){
