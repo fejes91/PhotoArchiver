@@ -57,7 +57,7 @@ public class PAFrame extends JFrame {
         
         inboxInfo = new JTextArea();
         inboxInfo.setPreferredSize(new Dimension(400, 450));
-        inboxInfo.setText("Files in inbox: " + logic.getInbox().listFiles().length);
+        inboxInfo.setText("Files in inbox: " + logic.getInboxFileCount());
         vaultInfo = new JTextArea();
         vaultInfo.setSize(400, 400);
         vaultInfo.setLineWrap(true);     

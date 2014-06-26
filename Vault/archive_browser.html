@@ -237,12 +237,18 @@
         <table class="pagination">
             <tr>
                 <td class="prevPage"></td>
-                <td class="pages" style="width: 300px;"></td>
+                <td class="pages" style="width: 350px;"></td>
                 <td class="nextPage"></td>
             </tr>
         </table>
         <div id="pictures"></div>
-        <div class="pagination"></div>
+        <table class="pagination">
+            <tr>
+                <td class="prevPage"></td>
+                <td class="pages" style="width: 300px;"></td>
+                <td class="nextPage"></td>
+            </tr>
+        </table>
         <div id="img_hover"></div>
         <div id="slide_layer">
             <div id="slide"></div>
@@ -259,7 +265,7 @@
 		
         <script>
             var dictionary = {};
-            var imagePerPage = 20;
+            var imagePerPage = 40;
             var actualPage = 0;
             var resizeTimer;
             var needToClear = true;
@@ -614,7 +620,7 @@
                 var numberOfPages = Math.ceil(pictureCount / imagePerPage);
 
                 if(numberOfPages > 1 ){
-                    $(".prevPage").html('<button class="pagerBtn" id="prevPage"> < </button>');
+                    $(".prevPage").html('<button class="pagerBtn"> < </button>');
                 }
 
                 if(numberOfPages > 7 && actual > 3){
@@ -644,7 +650,7 @@
                 }
 
                 if(numberOfPages > 1){
-                    $(".nextPage").html('<button class="pagerBtn" id="nextPage"> > </button>');
+                    $(".nextPage").html('<button class="pagerBtn"> > </button>');
                 }
 
                 $(".pages").html(str);
@@ -657,15 +663,15 @@
                     $("#searchFrom").submit();
                 });
 
-                $("#nextPage").unbind();
-                $("#prevPage").unbind();
+                $(".nextPage .pagerBtn").unbind();
+                $(".prevPage .pagerBtn").unbind();
                 if(actual < numberOfPages){
-                    $("#nextPage").bind('click', function(){
+                    $(".nextPage .pagerBtn").bind('click', function(){
                         $(".pageBtn.active").next().click();
                     });
                 }
                 if(actual > 1){
-                    $("#prevPage").bind('click', function(){
+                    $(".prevPage .pagerBtn").bind('click', function(){
                             $(".pageBtn.active").prev().click();
                     });
                 }
@@ -677,21 +683,21 @@
 
 				$("#slide img").css("height", window.innerHeight * 0.97);
 
-                $("#slide_layer .stat").html(($img.index() + 1) + " / " + $("#pictures img").length + "<br>[" + actualPage + " /" + Math.ceil(pictureCount / imagePerPage) + "]");
+                $("#slide_layer .stat").html("Kép: " + ($img.index() + 1) + " / " + $("#pictures img").length + "<br> Oldal: " + actualPage + " /" + Math.ceil(pictureCount / imagePerPage));
 
                 setTimeout(function(){
                     $("#slide img").css("top", (window.innerHeight - $("#slide img").height()) / 2).css("left", (window.innerWidth - $("#slide img").width()) / 2);
-                }, 100);
+                }, 500);
 
                 if(($img.index() + 1) == $("#pictures img").length && !$(".pagination .pageBtn").last().hasClass("active")){
-                    $(".layerNextPage").show().click(function(){$("#nextPage").click();});
+                    $(".layerNextPage").show().click(function(){$(".nextPage .pagerBtn").click();});
                 }
                 else{
                     $(".layerNextPage").hide();
                 }
 
                 if($img.index() == 0 && !$(".pagination .pageBtn").first().hasClass("active")){
-                    $(".layerPrevPage").show().click(function(){$("#prevPage").click();});
+                    $(".layerPrevPage").show().click(function(){$(".prevPage .pagerBtn").click();});
                 }
                 else{
                     $(".layerPrevPage").hide();

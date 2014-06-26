@@ -332,6 +332,14 @@ public class PALogic {
         return first;
     }
     
+    public int getInboxFileCount(){
+        if(inbox != null && inbox.listFiles() != null){
+            return inbox.listFiles().length;
+        }
+        
+        return 0;
+    }
+    
     public void printToSummary(String s){
         summary.add(s);
     }
