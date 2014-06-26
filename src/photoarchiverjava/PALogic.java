@@ -104,7 +104,7 @@ public class PALogic {
                     out.flush();
                 }
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(keywordFile, true)));
-                out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
+                out.println("addPicture(\"" + path + "/" + fileName.hashCode() + ".jpg\", \"" + allKeyword + "\");");
                 out.flush();
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
@@ -117,7 +117,7 @@ public class PALogic {
             File folderDescriptorFile = new File(vault.getAbsolutePath() + "/" + path + "/desc.js");
             folderDescriptorFile.createNewFile();
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(folderDescriptorFile, true)));
-            out.println("addPicture(\"" + path + "/" + fileName + "\", \"" + allKeyword + "\");");
+            out.println("addPicture(\"" + path + "/" + fileName.hashCode() + ".jpg\", \"" + allKeyword + "\");");
             out.flush();
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
@@ -228,10 +228,10 @@ public class PALogic {
 
         try {
             //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName()));
-            Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName()));
+            Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName().hashCode() + ".jpg"));
 
             BufferedImage thumbnail = generateThumbnail(file);
-            ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "/" + file.getName()));
+            ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "/" + file.getName().hashCode() + ".jpg"));
 
             storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName(), file.getName(), md);
         } catch (FileAlreadyExistsException ex) {
