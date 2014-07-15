@@ -193,6 +193,20 @@
                 font-weight: bold;
             }
 
+            .error{
+                color: red;
+            }
+
+            select.error option{
+                color: black;
+            }
+
+            select{
+                height: 30px;
+                font-size: 14px;
+            }
+
+
         </style>
     </head>
 
@@ -211,18 +225,37 @@
                     </div>
 
                     <div style="margin: 10px 0px 10px 20px; width:25%; float: left; text-align: center;">
-                        <input type="submit" value="Keresés!" id="search_btn" style="width: 80%; height:50px; "/>
+                        <input type="submit" value="Keresés!" id="search_btn" style="width: 60%; height:50px; "/>
                     </div>
 
                     <div style="float: right; margin: 10px 20px 10px 0px; text-align: right; width: 35%">
                         <input type="button" value="X" id="clear_dates" style="width: 40px; height:30px;"/>
-                        <input type="text" max-length="4" id="yearFrom" class="dateField" style="width: 50px; height:30px;"/>
-                        <input type="text" max-length="2" id="monthFrom" class="dateField" style="width: 30px; height:30px;"/>
-                        <input type="text" max-length="2" id="dayFrom" class="dateField" style="width: 30px; height:30px;"/>-tól  
 
-                        <input type="text" max-length="4" id="yearTo" class="dateField" style="width: 50px; height:30px;"/>
-                        <input type="text" max-length="2" id="monthTo" class="dateField" style="width: 30px; height:30px;"/>
-                        <input type="text" max-length="2" id="dayTo" class="dateField" style="width: 30px; height:30px;"/>-ig
+                        <select id="yearFrom">
+                            <option>---</option>
+                        </select>
+
+                        <select id="monthFrom">
+                            <option>---</option>
+                        </select>
+
+                        <select id="dayFrom">
+                            <option>---</option>
+                        </select>
+                        -tól
+
+                        <select id="yearTo">
+                            <option>---</option>
+                        </select>
+
+                        <select id="monthTo">
+                            <option>---</option>
+                        </select>
+
+                        <select id="dayTo">
+                            <option>---</option>
+                        </select>
+                        -ig
                         <input type="button" value="Máig!" id="today" style="width: 75px; height:30px;"/>
                     </div>
 
@@ -274,35 +307,71 @@
                 clearTimeout(resizeTimer);
                 resizeTimer = window.setTimeout(function(){resizePictures();}, 500);
             });
+
+            function checkDateOptions(){
+                //console.log("check date options");
+                $("select").removeClass("error");
+
+                $("#dayTo option").each(function(){
+                    if($("#yearTo option:selected").val() === $("#yearFrom option:selected").val() && 
+                        $("#monthTo option:selected").val() === $("#monthFrom option:selected").val() && 
+                        $(this).val() < $("#dayFrom option:selected").val()){
+                        $(this).attr("disabled", true);
+                        if($(this).is(":selected")){
+                            $("#dayTo").addClass("error");
+                        }
+                    }
+                    else{
+                        $(this).attr("disabled", false);
+                    }
+                });
+
+                $("#monthTo option").each(function(){
+                    if($("#yearTo option:selected").val() === $("#yearFrom option:selected").val() && $(this).val() < $("#monthFrom option:selected").val()){
+                        $(this).attr("disabled", true);
+                        if($(this).is(":selected")){
+                            $("#monthTo, #dayTo").addClass("error");
+                        }
+                    }
+                    else{
+                        $(this).attr("disabled", false);
+                    }  
+                });
+
+                $("#yearTo option").each(function(){
+                    if($(this).val() < $("#yearFrom option:selected").val()){
+                        $(this).attr("disabled", true);
+                        if($(this).is(":selected")){
+                            $("#yearTo, #monthTo, #dayTo").addClass("error");
+
+                        }
+                    }
+                    else{
+                        $(this).attr("disabled", false);
+                    }    
+                });
+            }
+
             $(window).ready(function() {
-                $("#searchFrom").submit(function(){
-                    $("#dateFrom").val($("#yearFrom").val() + "-" + $("#monthFrom").val() + "-" + $("#dayFrom").val());
-                    $("#dateTo").val($("#yearTo").val() + "-" + $("#monthTo").val() + "-" + $("#dayTo").val());
+                $("#searchFrom").submit(function(e){
+                    var dateFrom = $("#yearFrom").val() + "-" + $("#monthFrom").val() + "-" + $("#dayFrom").val();
+                    var dateTo = $("#yearTo").val() + "-" + $("#monthTo").val() + "-" + $("#dayTo").val();
+                    var to = new Date(dateTo);
+                    var from = new Date(dateFrom);
+
+                    if(isNaN(to) || isNaN(from) || to < from) {
+                        $("select").addClass("error");
+                        e.preventDefault();
+                    }
+
+                    $("#dateFrom").val(dateFrom);
+                    $("#dateTo").val(dateTo);
+                    
                     if(resetPagination){
                         $("#page").val("1");
                     }
                     
                 });
-
-                $('input[max-length]').bind("keyup", function(event){
-                    if($(this).val().length == $(this).attr("max-length")){
-						needToClear = false;
-                        $(this).next().focus();
-                    }
-                });
-
-                /*$("input").on('change', function(){
-                    $("#page").val("1");
-                });*/
-                
-                $('.dateField').focus(function(){
-					if(needToClear){
-						$(this).val('');
-					}
-					else{
-						$(this).select();
-					}
-				});
 
                 searchStr = getURLParameter("search");
                 dateFromStr = getURLParameter("dateFrom");
@@ -314,18 +383,76 @@
                 }
                 else{
                     $("#page").val("1");
-                }               
+                }        
 
-                if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined"){
-                    var dateFromArray = dateFromStr.split("-");
-                    var dateToArray = dateToStr.split("-");
-                    $("#yearFrom").val(dateFromArray[0]);
-                    $("#monthFrom").val(dateFromArray[1]);
-                    $("#dayFrom").val(dateFromArray[2]);
-                    $("#yearTo").val(dateToArray[0]);
-                    $("#monthTo").val(dateToArray[1]);
-                    $("#dayTo").val(dateToArray[2]);
-                }
+                loadJs("meta/dates/dateList.js", function() {
+                    for(year in dates){
+                        $("#yearFrom, #yearTo").append('<option value="' + year + '">' + year + '</option>');
+                    }
+
+                    $("#yearFrom").change(function(){
+                        var year = $(this).val();
+                        $("#monthFrom").html("<option>---</option>");
+                        $("#dayFrom").html("<option>---</option>");
+                        for(month in dates[year]){
+                            $("#monthFrom").append('<option value="' + month + '">' + month + '</option>');
+                        }
+
+                        checkDateOptions();
+                    });
+
+                    $("#monthFrom").change(function(){
+                        var year = $("#yearFrom").val();
+                        var month = $(this).val();
+                        $("#dayFrom").html("<option>---</option>");
+                        for(day in dates[year][month]){
+                            $("#dayFrom").append('<option value="' + day + '">' + day + '</option>');
+                        }
+
+                        checkDateOptions();
+                    });
+
+                    $("#yearTo").change(function(){
+                        var year = $(this).val();
+                        $("#monthTo").html("<option>---</option>");
+                        $("#dayTo").html("<option>---</option>");
+                        for(month in dates[year]){
+                            $("#monthTo").append('<option value="' + month + '">' + month + '</option>');
+                        }
+
+                        checkDateOptions();
+                    });
+
+                    $("#monthTo").change(function(){
+                        var year = $("#yearTo").val();
+                        var month = $(this).val();
+                        $("#dayTo").html("<option>---</option>");
+                        for(day in dates[year][month]){
+                            $("#dayTo").append('<option value="' + day + '">' + day + '</option>');
+                        }
+
+                        checkDateOptions();
+                    });
+
+                    $("#dayFrom, #dayTo").change(function(){
+                        checkDateOptions();
+                    });
+
+
+                    if(typeof dateFromStr != "undefined" && typeof dateToStr != "undefined"){
+                        var dateFromArray = dateFromStr.split("-");
+                        var dateToArray = dateToStr.split("-");
+
+                        $('#yearFrom option[value="' + dateFromArray[0] + '"]').prop('selected', true).trigger('change');
+                        $('#monthFrom option[value="' + dateFromArray[1] + '"]').prop('selected', true).trigger('change');
+                        $('#dayFrom option[value="' + dateFromArray[2] + '"]').prop('selected', true).trigger('change');
+                        $('#yearTo option[value="' + dateToArray[0] + '"]').prop('selected', true).trigger('change');
+                        $('#monthTo option[value="' + dateToArray[1] + '"]').prop('selected', true).trigger('change');
+                        $('#dayTo option[value="' + dateToArray[2] + '"]').prop('selected', true).trigger('change');
+                    }
+                });       
+
+                
                 
 
                 if (typeof searchStr !== "undefined" && searchStr != "") {
@@ -373,9 +500,28 @@
 
                 $("#today").click(function(){
                     var today = new Date();
-                    $("#yearTo").val(today.getFullYear());
-                    $("#monthTo").val(today.getMonth() + 1);
-                    $("#dayTo").val(today.getDate());
+
+                    if($('#yearTo option[value="' + today.getFullYear() + '"]').length > 0){
+                        $('#yearTo option[value="' + today.getFullYear() + '"]').prop('selected', true).trigger('change');
+                        if($('#monthTo option[value="' + today.getMonth() + 1 + '"]').length > 0){
+                            $('#monthTo option[value="' + today.getMonth() + 1 + '"]').prop('selected', true).trigger('change');
+                            if($('#dayTo option[value="' + today.getDate() + '"]').length > 0){
+                                $('#dayTo option[value="' + today.getDate() + '"]').prop('selected', true).trigger('change');
+                            }
+                            else{
+                                $('#dayTo option').last().prop('selected', true).trigger('change');
+                            }
+                        }
+                        else{
+                            $('#monthTo option').last().prop('selected', true).trigger('change');
+                            $('#dayTo option').last().prop('selected', true).trigger('change');
+                        }
+                    }
+                    else{
+                        $('#yearTo option').last().prop('selected', true).trigger('change');
+                        $('#monthTo option').last().prop('selected', true).trigger('change');
+                        $('#dayTo option').last().prop('selected', true).trigger('change');
+                    }
                 });
 
                 $("#clear_dates").click(function() {
