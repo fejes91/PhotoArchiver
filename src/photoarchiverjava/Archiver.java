@@ -6,7 +6,6 @@ package photoarchiverjava;
 
 import java.io.File;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
@@ -25,10 +24,10 @@ public class Archiver extends Thread{
     @Override
     public void run(){
         start = new GregorianCalendar();
-        File[] files = logic.getInbox().listFiles();
+        File[] files = logic.getInbox().listFiles(new ImageFilter());
         
         Counter.reset();
-        Counter.setAll(files.length);
+        Counter.setAll(logic.getInboxFileCount());
         logic.getFrame().getProgressLabel().setText("0%");
         
         for (int i = 0; i < files.length; ++i) {

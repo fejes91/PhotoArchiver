@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +29,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -38,8 +36,6 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.codec.binary.Base64;
 /**
  *
  * @author adam
@@ -57,8 +53,8 @@ public class PALogic {
 
 
     public PALogic() {
-        vault = new File("/home/adam/git/PhotoArchiver/Vault");
-        inbox = new File("/home/adam/Desktop/Inbox");
+        //vault = new File("/home/adam/git/PhotoArchiver/Vault");
+        //inbox = new File("/home/adam/Desktop/Inbox");
         //inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         //vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
         summary = new LinkedList<>();
@@ -189,7 +185,6 @@ public class PALogic {
     }
 
     public void handleFile(File file, MyMetaData md) {
-        //System.out.println("MyMeta: " + myMeta);
         printToSummary("Handling file: " + file.getName());
         vault.mkdir();
         File year = new File(vault.getAbsolutePath() + "/" + md.getDate().get(Calendar.YEAR));
@@ -230,7 +225,7 @@ public class PALogic {
             //Files.move(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName()));
             Files.copy(Paths.get(file.getAbsolutePath()), Paths.get(day.getAbsolutePath() + "/" + file.getName().hashCode() + ".jpg"));
 
-            BufferedImage thumbnail = generateThumbnail(file);
+            BufferedImage thumbnail = generateThumbnail(file, 600.0, 400.0);
             ImageIO.write(thumbnail, "jpg", new File(tDay.getAbsolutePath() + "/" + file.getName().hashCode() + ".jpg"));
 
             storeMetadata(year.getName() + "/" + month.getName() + "/" + day.getName(), file.getName(), md);
@@ -243,7 +238,7 @@ public class PALogic {
         }
     }
 
-    private BufferedImage generateThumbnail(File image) {
+    public BufferedImage generateThumbnail(File image, Double resizedWidth, Double resizedHeight) {
         BufferedImage originalImage;
         try {
             originalImage = ImageIO.read(image);
@@ -251,12 +246,9 @@ public class PALogic {
             double originalHeight = originalImage.getHeight();
             boolean isLandscape = originalHeight < originalWidth;
 
-            Double resizedWidth, resizedHeight;
             if (isLandscape) {
-                resizedWidth = 600.0;
                 resizedHeight = originalHeight / (originalWidth / resizedWidth);
             } else {
-                resizedHeight = 400.0;
                 resizedWidth = originalWidth / (originalHeight / resizedHeight);
             }
 
@@ -333,8 +325,9 @@ public class PALogic {
     }
     
     public int getInboxFileCount(){
-        if(inbox != null && inbox.listFiles() != null){
-            return inbox.listFiles().length;
+        File[] files;
+        if(inbox != null && (files = inbox.listFiles(new ImageFilter())) != null){    
+            return files.length;
         }
         
         return 0;
