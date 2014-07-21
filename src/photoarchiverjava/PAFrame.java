@@ -122,7 +122,7 @@ public class PAFrame extends JFrame {
                 if (logic.getInbox() != null) {
                     inboxPath.setText("Inbox dir: " + logic.getInbox().getAbsolutePath());
                     inboxInfo.setText("Files in inbox: " + logic.getInboxFileCount());
-                    loadPreviews(logic, imagesPanel);
+                    //loadPreviews(logic, imagesPanel);
                 }
             }
         });

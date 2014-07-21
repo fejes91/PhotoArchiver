@@ -297,6 +297,7 @@
         </div>
 		
         <script>
+			var IMAGECOUNTER;
             var dictionary = {};
             var imagePerPage = 40;
             var actualPage = 0;
@@ -909,6 +910,11 @@
             }
 
             function addPicture(picUrl, keyword) {
+				if(typeof pictureCount !== "undefined" && pictureCount === 500){
+					//alert("Keresés túl sok találatot eredményezett, az első 500 lett megjelenítve. A többi kép megnézéséhez szűkítsd a keresést");
+					return false;
+				}
+				
                 if(typeof meta[picUrl] == "undefined"){
                     meta[picUrl] = 1;
                 }
