@@ -77,6 +77,7 @@ public class PALogic {
         metaDir.mkdir();
 
         String allKeyword = "";
+        //TODO minden mehetne toLowerCase-el
         for (String keyword : md.getKeywords()) {
             allKeyword += keyword + " ";
         }

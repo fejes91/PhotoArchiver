@@ -301,6 +301,7 @@
         <script>
             //TODO 500 találat fölött a vég dátum átállítása
             var maxDate = new Date("1970-01-01");
+            var isKeywordInit = false;
             var dictionary = {};
             var imagePerPage = 40;
             var actualPage = 0;
@@ -363,7 +364,7 @@
                     var to = new Date(dateTo);
                     var from = new Date(dateFrom);
 
-                    if(isNaN(to) || isNaN(from) || to < from) {
+                    if(to < from) {
                         $("select").addClass("error");
                         e.preventDefault();
                     }
@@ -639,6 +640,7 @@
             }
 
             function initKeywordList() {
+                isKeywordInit = true;
                 keywordlist = new Array();
                 loadJs("meta/list/keywordlist.js", function() {
                     keywordlist.sort();
@@ -897,6 +899,7 @@
                     });
                 }
                 else {
+                    isKeywordInit = false;
                     var min = 9999999;
                     var max = 0;
                     for (key in count) {
@@ -930,12 +933,11 @@
             }
 
             function addPicture(picUrl, keywords) {
-				if(typeof pictureCount !== "undefined" && pictureCount === 500){
+				if(!isKeywordInit && typeof pictureCount !== "undefined" && pictureCount === 500){
 					$("#maxDate").html(maxDate.getFullYear() + ". " + (parseInt(maxDate.getMonth()) + 1) + ". " + maxDate.getDate());
                     $("#error").show();
 					return false;
 				}
-				
                 if(typeof meta[picUrl] == "undefined"){
                     meta[picUrl] = 1;
                 }
@@ -985,12 +987,13 @@
             }
 
             function addToDictionary(keyword, hash){
-                console.log("loading: " + keyword + " - " + hash);
+                //console.log("loading: " + keyword + " - " + hash);
                 dictionary[keyword] = hash;
             }
 
             function getDictFileName(keyword){
                 var first = keyword[0];
+                first = first.toLowerCase();
                 if(first === "ö"){
                     return "o";
                 }
