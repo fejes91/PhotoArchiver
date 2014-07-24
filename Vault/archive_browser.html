@@ -297,7 +297,7 @@
         </div>
 		
         <script>
-			var IMAGECOUNTER;
+			//var IMAGECOUNTER;
             var dictionary = {};
             var imagePerPage = 40;
             var actualPage = 0;
@@ -316,7 +316,7 @@
                 $("#dayTo option").each(function(){
                     if($("#yearTo option:selected").val() === $("#yearFrom option:selected").val() && 
                         $("#monthTo option:selected").val() === $("#monthFrom option:selected").val() && 
-                        $(this).val() < $("#dayFrom option:selected").val()){
+                        parseInt($(this).val()) < parseInt($("#dayFrom option:selected").val())){
                         $(this).attr("disabled", true);
                         if($(this).is(":selected")){
                             $("#dayTo").addClass("error");
@@ -328,7 +328,7 @@
                 });
 
                 $("#monthTo option").each(function(){
-                    if($("#yearTo option:selected").val() === $("#yearFrom option:selected").val() && $(this).val() < $("#monthFrom option:selected").val()){
+                    if($("#yearTo option:selected").val() === $("#yearFrom option:selected").val() && parseInt($(this).val()) < parseInt($("#monthFrom option:selected").val())){
                         $(this).attr("disabled", true);
                         if($(this).is(":selected")){
                             $("#monthTo, #dayTo").addClass("error");
@@ -340,7 +340,7 @@
                 });
 
                 $("#yearTo option").each(function(){
-                    if($(this).val() < $("#yearFrom option:selected").val()){
+                    if(parseInt($(this).val()) < parseInt($("#yearFrom option:selected").val())){
                         $(this).attr("disabled", true);
                         if($(this).is(":selected")){
                             $("#yearTo, #monthTo, #dayTo").addClass("error");
@@ -789,7 +789,7 @@
                     str += '">' + i + '</span>';
                 }
 
-                if(actual < numberOfPages - 3){
+                if(actual < numberOfPages - 4){
                     str += "...";    
                 }
                 if(numberOfPages > 7 && actual < numberOfPages - 2){
