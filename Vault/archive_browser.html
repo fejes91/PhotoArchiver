@@ -1,4 +1,5 @@
 ﻿<html>
+    <!--2014-07-24-->
     <head>
         <title>Archive Browser</title>
         <meta charset="UTF-8">
@@ -40,7 +41,7 @@
                 display: inline-block;
             }
 
-            #stat{
+            .searchStat{
                 font-size: 17px;
                 display: inline-block;
                 width: 100%;
@@ -266,7 +267,8 @@
         </div>
 
         <div id="keywords" hidden></div>
-        <div id="stat"></div>
+        <div id="stat" class="searchStat"></div>
+        <div id="error" class="error searchStat" style="display: none;">Keresés túl sok találatot eredményezett, az utolsó megjelenített nap: <span id="maxDate"></span> <button id="searchFromMaxDate">Keresés innen, máig!</button></div>
         <table class="pagination">
             <tr>
                 <td class="prevPage"></td>
@@ -297,7 +299,8 @@
         </div>
 		
         <script>
-			//var IMAGECOUNTER;
+            //TODO 500 találat fölött a vég dátum átállítása
+            var maxDate = new Date("1970-01-01");
             var dictionary = {};
             var imagePerPage = 40;
             var actualPage = 0;
@@ -523,6 +526,15 @@
                         $('#monthTo option').last().prop('selected', true).trigger('change');
                         $('#dayTo option').last().prop('selected', true).trigger('change');
                     }
+                });
+
+                $("#searchFromMaxDate").click(function(){
+                    $('#yearFrom option[value="' + maxDate.getFullYear() + '"]').prop('selected', true).trigger('change');
+                    $('#monthFrom option[value="' + (parseInt(maxDate.getMonth()) + 1) + '"]').prop('selected', true).trigger('change');
+                    $('#dayFrom option[value="' + maxDate.getDate() + '"]').prop('selected', true).trigger('change');
+                    $("#today").click();
+                    $("#searchFrom").submit();
+
                 });
 
                 $("#clear_dates").click(function() {
@@ -827,14 +839,22 @@
             function slideShow($img){
 				$("#slide_layer").show();
 				$("#slide").html('<img src="' + $img.attr('full') + '">');
-
-				$("#slide img").css("height", window.innerHeight * 0.97);
+                
+                $("#slide img").hide();
 
                 $("#slide_layer .stat").html("Kép: " + ($img.index() + 1) + " / " + $("#pictures img").length + "<br> Oldal: " + actualPage + " /" + Math.ceil(pictureCount / imagePerPage));
 
                 setTimeout(function(){
-                    $("#slide img").css("top", (window.innerHeight - $("#slide img").height()) / 2).css("left", (window.innerWidth - $("#slide img").width()) / 2);
-                }, 500);
+                    if($("#slide img").get(0).naturalWidth / $("#slide img").get(0).naturalHeight > window.innerWidth / window.innerHeight){
+                        $("#slide img").css("width", window.innerWidth * 0.97 - 15);
+                    }
+                    else{
+                        $("#slide img").css("height", window.innerHeight * 0.97);
+                    }
+
+                    $("#slide img").css("top", (window.innerHeight - $("#slide img").height()) / 2).css("left", (window.innerWidth - 15 - $("#slide img").width()) / 2);
+                    $("#slide img").show();
+                }, 200);
 
                 if(($img.index() + 1) == $("#pictures img").length && !$(".pagination .pageBtn").last().hasClass("active")){
                     $(".layerNextPage").show().click(function(){$(".nextPage .pagerBtn").click();});
@@ -909,9 +929,10 @@
                 }
             }
 
-            function addPicture(picUrl, keyword) {
+            function addPicture(picUrl, keywords) {
 				if(typeof pictureCount !== "undefined" && pictureCount === 500){
-					//alert("Keresés túl sok találatot eredményezett, az első 500 lett megjelenítve. A többi kép megnézéséhez szűkítsd a keresést");
+					$("#maxDate").html(maxDate.getFullYear() + ". " + (parseInt(maxDate.getMonth()) + 1) + ". " + maxDate.getDate());
+                    $("#error").show();
 					return false;
 				}
 				
@@ -923,8 +944,13 @@
                 }
 
                 if(typeof searchArray == "undefined" || meta[picUrl] == searchArray.length || searchArray.length == 0){ //ha van annyi előfordulás ahány kulcsszó akkor benne van a metszetben
-                    filteredMeta[picUrl] = keyword;
+                    filteredMeta[picUrl] = keywords;
 
+                    var parts = picUrl.split("/");
+                    var currentDate = new Date(parts[0] + "-" + parts[1] + "-" + parts[2]);
+                    if(currentDate > maxDate){
+                        maxDate = currentDate;
+                    }
                     if(typeof pictureCount == "undefined"){
                         pictureCount = 0;
                     }
