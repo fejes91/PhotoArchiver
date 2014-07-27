@@ -30,6 +30,8 @@ public class Archiver extends Thread{
         Counter.setAll(logic.getInboxFileCount());
         logic.getFrame().getProgressLabel().setText("0%");
         
+        logic.generateArciveBrowser();
+        
         for (int i = 0; i < files.length; ++i) {
             File f = files[i];
             logic.handleFile(f, logic.getMetadata(f));

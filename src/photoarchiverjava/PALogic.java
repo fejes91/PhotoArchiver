@@ -12,10 +12,13 @@ import com.drew.metadata.Tag;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.file.FileAlreadyExistsException;
@@ -270,6 +273,29 @@ public class PALogic {
             return null;
         }
 
+    }
+    
+    public void generateArciveBrowser(){
+        try {
+            InputStream s = this.getClass().getResourceAsStream("archive_browser.html");
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(s));
+            StringBuilder sb = new StringBuilder();
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            
+            File html = new File(vault.getAbsolutePath() + "/archive_browser.html");
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(html, true)));
+            out.println(sb.toString());
+            out.flush();
+            
+
+        } catch (IOException ex) {
+            Logger.getLogger(PALogic.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private String getAllMetadataAsString(File f) {
