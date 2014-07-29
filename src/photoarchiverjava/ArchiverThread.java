@@ -39,6 +39,8 @@ public class ArchiverThread extends Thread{
             //System.out.println(getAllMetadataAsString(f));
         }
         
+        logic.writeArchiveDate();
+        
         logic.printToSummary(
                 "------------------------------------------\n"
                 +"SUMMARY: " + Counter.getAll()

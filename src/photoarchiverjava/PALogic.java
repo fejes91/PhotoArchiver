@@ -110,7 +110,6 @@ public class PALogic {
                 System.err.println(ex.getMessage());
             }
             //System.out.println("insert meta for file " + path + " to keyword file " + keywordFile.getName());
-
         }
 
         try {
@@ -122,10 +121,42 @@ public class PALogic {
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }
-
-
-        Counter.incMoved();
-                
+        Counter.incMoved();       
+    }
+    
+    public void writeArchiveDate(){
+        FileWriter fw = null;
+        try {
+            File metaDir = new File(vault.getAbsolutePath() + "/meta");
+            metaDir.mkdir();
+            File dateDir = new File(metaDir.getAbsolutePath() + "/dates");
+            dateDir.mkdir();
+            File dateList = new File(metaDir.getAbsolutePath() + "/" + dateDir.getName() + "/archiveDate.js");
+            Calendar today = new GregorianCalendar();
+            fw = new FileWriter(dateList.getAbsoluteFile());
+            try (BufferedWriter bw = new BufferedWriter(fw)) {
+                String min = String.valueOf(today.get(Calendar.MINUTE));
+                if(today.get(Calendar.MINUTE) < 10){
+                    min = "0" + min;
+                }
+                bw.write("archiveDate(\"" + 
+                        today.get(Calendar.YEAR) + ". " + 
+                        (today.get(Calendar.MONTH) + 1) + ". " + 
+                        today.get(Calendar.DAY_OF_MONTH) + ". " + 
+                        today.get(Calendar.HOUR_OF_DAY) + ":" + 
+                        min + "\");"
+                        );
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(PALogic.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                fw.close();
+            } catch (IOException ex) {
+                Logger.getLogger(PALogic.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
     }
 
     public MyMetaData getMetadata(File f) {
