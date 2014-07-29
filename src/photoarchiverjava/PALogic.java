@@ -49,8 +49,8 @@ public class PALogic {
     private File vault;
     private File inbox;
     private final PAFrame frame;
-    private SummaryWriter writer;
-    private Archiver archiver;
+    private SummaryWriterThread writer;
+    private ArchiverThread archiver;
     private Queue<String> summary;
     private PrintStream printStream;
 
@@ -66,10 +66,10 @@ public class PALogic {
     }
 
     public void doArchive() {
-        archiver = new Archiver(this);
+        archiver = new ArchiverThread(this);
         
         printStream = new PrintStream(new CustomOutputStream(frame.getVaultInfo()));
-        writer = new SummaryWriter(summary, printStream);
+        writer = new SummaryWriterThread(summary, printStream);
 
         writer.start();
         archiver.start();
@@ -287,11 +287,19 @@ public class PALogic {
                 sb.append(line + "\n");
             }
             
-            File html = new File(vault.getAbsolutePath() + "/archive_browser.html");
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(html, true)));
-            out.println(sb.toString());
-            out.flush();
-            
+            File file = new File(vault.getAbsolutePath() + "/archive_browser.html");
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                    file.createNewFile();
+            }
+
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(sb.toString());
+            bw.close();
+
+            System.out.println("Done");
+
 
         } catch (IOException ex) {
             Logger.getLogger(PALogic.class.getName()).log(Level.SEVERE, null, ex);
@@ -380,11 +388,11 @@ public class PALogic {
         this.inbox = inbox;
     }
 
-    public SummaryWriter getWriter() {
+    public SummaryWriterThread getWriter() {
         return writer;
     }
 
-    public void setWriter(SummaryWriter writer) {
+    public void setWriter(SummaryWriterThread writer) {
         this.writer = writer;
     }
 

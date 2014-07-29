@@ -12,11 +12,11 @@ import java.util.GregorianCalendar;
  *
  * @author adam
  */
-public class Archiver extends Thread{
+public class ArchiverThread extends Thread{
     PALogic logic;
     private static Calendar start;
     
-    public Archiver(PALogic l) {
+    public ArchiverThread(PALogic l) {
         logic = l;
     }
     

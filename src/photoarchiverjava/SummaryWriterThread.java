@@ -13,13 +13,13 @@ import java.util.logging.Logger;
  *
  * @author adam
  */
-public class SummaryWriter extends Thread {
+public class SummaryWriterThread extends Thread {
 
     private Queue q;
     private PrintStream stream;
     private boolean isArchiving;
 
-    public SummaryWriter(Queue q, PrintStream stream) {
+    public SummaryWriterThread(Queue q, PrintStream stream) {
         this.q = q;
         this.stream = stream;
         
