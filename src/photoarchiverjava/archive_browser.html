@@ -178,7 +178,12 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
 
             #slide img{
                 position: fixed;
+                max-height: 97%;
+                max-width: 98%;
+                top: 10px;
+                left: 20px;
                 border: 2px solid rgba(100, 100, 100, 0.5);
+                margin: 0px auto;
             }
 
             .pageBtn{
@@ -853,19 +858,15 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
                 
                 $("#slide img").hide();
 
+
+				$("#slide img").load(function(){
+					$("#slide img").css("left", (window.innerWidth - 15 - $("#slide img").width()) / 2);
+					$("#slide img").show();
+				});
+
                 $("#slide_layer .stat").html("Kép: " + ($img.index() + 1) + " / " + $("#pictures img").length + "<br> Oldal: " + actualPage + " /" + Math.ceil(pictureCount / imagePerPage));
 
-                setTimeout(function(){
-                    if($("#slide img").get(0).naturalWidth / $("#slide img").get(0).naturalHeight > window.innerWidth / window.innerHeight){
-                        $("#slide img").css("width", window.innerWidth * 0.97 - 15);
-                    }
-                    else{
-                        $("#slide img").css("height", window.innerHeight * 0.97);
-                    }
-
-                    $("#slide img").css("top", (window.innerHeight - $("#slide img").height()) / 2).css("left", (window.innerWidth - 15 - $("#slide img").width()) / 2);
-                    $("#slide img").show();
-                }, 200);
+                
 
                 if(($img.index() + 1) == $("#pictures img").length && !$(".pagination .pageBtn").last().hasClass("active")){
                     $(".layerNextPage").show().click(function(){$(".nextPage .pagerBtn").click();});
