@@ -797,15 +797,15 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
                 if(numberOfPages > 1 ){
                     $(".prevPage").html('<button class="pagerBtn"> < </button>');
                 }
-
-                if(numberOfPages > 7 && actual > 3){
-                    str += '<span class="pageBtn">1</span>';
+                str += '<span class="pageBtn">1</span>';
+                if(actual > 3){
+                    //str += '<span class="pageBtn">1</span>';
                     if(actual > 4){
                         str += "...";    
                     }
                 }
 
-                for(var i = 1; i <= numberOfPages; ++i){
+                for(var i = 2; i <= numberOfPages; ++i){
                     if(numberOfPages > 7 && (i < actual - 2 || i > actual + 2)){
                         continue;
                     }
@@ -817,7 +817,7 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
                     str += '">' + i + '</span>';
                 }
 
-                if(actual < numberOfPages - 4){
+                if(numberOfPages > 7 && actual < numberOfPages - 3){
                     str += "...";    
                 }
                 if(numberOfPages > 7 && actual < numberOfPages - 2){
