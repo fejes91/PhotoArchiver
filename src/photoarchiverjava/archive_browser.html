@@ -156,11 +156,18 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
             }
 
             #slide_layer .prev, #slide_layer .next{
-                width: 50%;
+                width: 20%;
                 height: 100%;
-                
+                font-size: 100px;
+                padding: 120px 0px;
                 position: fixed;
                 top: 0px;
+                color: rgba(0,0,0,0);
+            }
+            
+            #slide_layer .prev:hover, #slide_layer .next:hover{
+                background-color: rgba(0, 0, 0, 0.5);
+                color: rgba(255, 255, 255, 1);
             }
 
             #slide_layer .prev{
@@ -298,8 +305,8 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
         <div id="slide_layer">
             <div id="slide"></div>
             
-            <div class="prev"></div>
-            <div class="next"></div>
+            <div class="prev"><</div>
+            <div class="next">></div>
 
             <div class="layerPrevPage"> << </div>
             <div class="layerNextPage"> >> </div>
