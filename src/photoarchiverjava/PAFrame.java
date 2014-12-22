@@ -10,7 +10,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -51,7 +53,7 @@ public class PAFrame extends JFrame {
 //        containerPanel.setBackground(Color.green);
         
         editorPanel = new JPanel();
-        editorPanel.setPreferredSize(new Dimension((int)(this.getWidth() * 0.2), inboxPanel.getHeight()));
+        editorPanel.setPreferredSize(new Dimension(300, inboxPanel.getHeight()));
         editorPanel.setBackground(Color.ORANGE);
 
         
@@ -129,7 +131,7 @@ public class PAFrame extends JFrame {
         inboxPanel.add(inboxInfo, BorderLayout.NORTH);
         inboxPanel.add(editorPanel, BorderLayout.EAST);
         imageGridScroll = new JScrollPane(imagesPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        imageGridScroll.setPreferredSize(new Dimension((int)(this.getWidth() * 0.8), inboxPanel.getHeight()));
+        imageGridScroll.setPreferredSize(new Dimension((this.getWidth() - 300), inboxPanel.getHeight()));
         imageGridScroll.getVerticalScrollBar().setUnitIncrement(16);
         inboxPanel.add(imageGridScroll, BorderLayout.WEST);
         inboxPanel.add(progressLabel, BorderLayout.SOUTH);
@@ -154,10 +156,21 @@ public class PAFrame extends JFrame {
         File[] files = logic.getInbox().listFiles(new ImageFilter());
         panel.removeAll();
         
-        int numberOfThreads = 3;
-        System.out.println("Number of threads: " + numberOfThreads);
-        for (int i = 0;  i < numberOfThreads; ++i) {
-            ThumbnailGeneratorThread generator = new ThumbnailGeneratorThread(logic, files, i + 1, panel);
+        ArrayList<ImagePanel> imagePanels = new ArrayList<>();
+        for(int i = 0; i < files.length; ++i){
+            MouseAdapter mouseAdapter = new ImagePanelMouseHandler(editorPanel);
+            Image image = new Image(files[i], logic.getMetadata(files[i]));
+            logic.getInboxImages().add(image);
+            ImagePanel imagePanel = new ImagePanel(new Dimension(260, 180), image);
+            imagePanel.addMouseListener(mouseAdapter);
+            panel.add(imagePanel);
+            imagePanels.add(imagePanel);
+        }
+        
+        int numberOfSegments = Math.max(files.length / 10, 1);
+        System.out.println("Number of threads: " + numberOfSegments);
+        for (int i = 0;  i < numberOfSegments; ++i) {
+            ThumbnailGeneratorThread generator = new ThumbnailGeneratorThread(logic, files, i + 1, numberOfSegments, imagePanels, panel);
             generator.start();
         }
     }

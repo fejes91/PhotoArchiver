@@ -30,6 +30,7 @@ import java.nio.file.attribute.FileTime;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -48,6 +49,7 @@ public class PALogic {
     private final String NO_DATA = "FILE HAS NOT METADATA!";
     private File vault;
     private File inbox;
+    private ArrayList<Image> inboxImages;
     private final PAFrame frame;
     private SummaryWriterThread writer;
     private ArchiverThread archiver;
@@ -60,10 +62,11 @@ public class PALogic {
         //inbox = new File("/home/adam/Desktop/Inbox");
         //inbox = new File("C:\\Users\\fejes_000\\Desktop\\PhotoArchiver Inbox");
         //vault = new File("G:\\Projektek\\PhotoArchiver\\Vault");
+        inboxImages = new ArrayList<>();
         summary = new LinkedList<>();
         frame = new PAFrame(this);
-
     }
+    
 
     public void doArchive() {
         archiver = new ArchiverThread(this);
@@ -159,7 +162,7 @@ public class PALogic {
         
     }
 
-    public MyMetaData getMetadata(File f) {
+    public  MyMetaData getMetadata(File f) {
         String name = f.getName();
         Calendar date = new GregorianCalendar();
         String desc = "";
@@ -306,7 +309,7 @@ public class PALogic {
 
     }
     
-    public void generateArciveBrowser(){
+    public void generateArchiveBrowser(){
         try {
             InputStream s = this.getClass().getResourceAsStream("archive_browser.html");
 
@@ -389,7 +392,16 @@ public class PALogic {
 
         return first;
     }
+
+    public ArrayList<Image> getInboxImages() {
+        return inboxImages;
+    }
+
+    public void setInboxImages(ArrayList<Image> inboxImages) {
+        this.inboxImages = inboxImages;
+    }
     
+        
     public int getInboxFileCount(){
         File[] files;
         if(inbox != null && (files = inbox.listFiles(new ImageFilter())) != null){    
